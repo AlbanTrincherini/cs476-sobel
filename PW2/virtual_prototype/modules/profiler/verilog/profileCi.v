@@ -24,12 +24,13 @@ module profileCi #( parameter[7:0] customId = 8'h00 )
 
     assign module_en = (start == 1'b1 & ciN == customId); 
 
-    assign c0_en = c0_on & clock;
+    assign c0_en = c0_on;
     assign c1_en = c1_on & stall;
     assign c2_en = c2_on & busIdle;
-    assign c3_en = c3_on & clock;
+    assign c3_en = c3_on;
 
     assign result = s_result;
+    assign done = module_en;
 
     always @(module_en, valueA, ctr0, ctr1, ctr2, ctr3) begin
         if(module_en == 1'b1) begin
@@ -81,16 +82,20 @@ module profileCi #( parameter[7:0] customId = 8'h00 )
 
     assign c0_r = (valueB[8] & module_en)  | reset;
     assign c1_r = (valueB[9] & module_en)  | reset;
-    assign c2_r = (valueB[10] & module_en)  | reset;
-    assign c3_r = (valueB[11] & module_en)  | reset;
+    assign c2_r = (valueB[10] & module_en) | reset;
+    assign c3_r = (valueB[11] & module_en) | reset;
             
 
     always @(posedge clock) begin
         if(module_en == 1'b1) begin
-            c0_on = valueB[0] & !valueB[4];
-            c1_on = valueB[1] & !valueB[5];
-            c2_on = valueB[2] & !valueB[6];
-            c3_on = valueB[3] & !valueB[7];
+            if (valueB[0]) c0_on = 1'b1;
+            if (valueB[1]) c1_on = 1'b1;
+            if (valueB[2]) c2_on = 1'b1;
+            if (valueB[3]) c3_on = 1'b1;
+            if (valueB[4]) c0_on = 1'b0;
+            if (valueB[5]) c1_on = 1'b0;
+            if (valueB[6]) c2_on = 1'b0;
+            if (valueB[7]) c3_on = 1'b0;
         end
     end 
     

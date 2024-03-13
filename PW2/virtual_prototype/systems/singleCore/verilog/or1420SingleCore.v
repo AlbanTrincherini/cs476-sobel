@@ -445,7 +445,7 @@ module or1420SingleCore ( input wire         clock12MHz,
    */
    profileCi #(.customId(8'd9))
     profiler(
-      .start(),
+      .start(s_cpu1CiStart),
       .clock(s_systemClock),
       .reset(s_cpuReset),
       .stall(s_cpuIsStalled),
