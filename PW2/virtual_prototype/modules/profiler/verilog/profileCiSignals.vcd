@@ -1,0 +1,216 @@
+$date
+	Mon Mar 18 10:25:18 2024
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module profileCiTestBench $end
+$scope module profiler $end
+$var wire 1 ! busIdle $end
+$var wire 1 " c0_en $end
+$var wire 1 # c0_r $end
+$var wire 1 $ c1_en $end
+$var wire 1 % c1_r $end
+$var wire 1 & c2_en $end
+$var wire 1 ' c2_r $end
+$var wire 1 ( c3_en $end
+$var wire 1 ) c3_r $end
+$var wire 8 * ciN [7:0] $end
+$var wire 1 + clock $end
+$var wire 1 , done $end
+$var wire 1 - module_en $end
+$var wire 1 . reset $end
+$var wire 32 / result [31:0] $end
+$var wire 1 0 stall $end
+$var wire 1 1 start $end
+$var wire 32 2 valueA [31:0] $end
+$var wire 32 3 valueB [31:0] $end
+$var wire 32 4 ctr3 [31:0] $end
+$var wire 32 5 ctr2 [31:0] $end
+$var wire 32 6 ctr1 [31:0] $end
+$var wire 32 7 ctr0 [31:0] $end
+$var parameter 1 8 count_up $end
+$var parameter 32 9 ctr_size $end
+$var parameter 8 : customId $end
+$var reg 1 ; c0_on $end
+$var reg 1 < c1_on $end
+$var reg 1 = c2_on $end
+$var reg 1 > c3_on $end
+$var reg 32 ? s_result [31:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+b1001 :
+b100000 9
+18
+$end
+#0
+$dumpvars
+b0 ?
+x>
+x=
+x<
+x;
+bx 7
+bx 6
+bx 5
+bx 4
+b0 3
+b0 2
+01
+00
+b0 /
+1.
+0-
+0,
+0+
+bx *
+1)
+x(
+1'
+0&
+1%
+0$
+1#
+x"
+0!
+$end
+#5
+b0 7
+b0 6
+b0 5
+b0 4
+1+
+#10
+0+
+#15
+1+
+#20
+x,
+x-
+0#
+0%
+0'
+0)
+11
+b1 3
+0.
+0+
+#25
+b0x 7
+b0x 4
+1+
+#30
+0+
+#35
+bx 4
+bx 7
+1+
+#40
+bx /
+bx ?
+1,
+1-
+b1001 *
+0+
+#45
+1"
+1;
+1+
+#50
+b110 3
+0+
+#55
+1=
+1<
+1+
+#60
+0+
+#65
+1+
+#70
+1$
+1&
+10
+1!
+0+
+#75
+b1 5
+b1 6
+1+
+#80
+0+
+#85
+b10 6
+b10 5
+1+
+#90
+0+
+#95
+b11 5
+b11 6
+1+
+#100
+0+
+#105
+b100 6
+b100 5
+1+
+#110
+b110010 3
+0+
+#115
+b101 5
+b101 6
+0$
+0<
+0"
+0;
+1+
+#120
+1'
+b10000000000 3
+0+
+#125
+b0 5
+1+
+#130
+0'
+b0 3
+0+
+#135
+b1 5
+1+
+#140
+b101 /
+b101 ?
+b1 2
+0+
+#145
+b10 5
+1+
+#150
+b10 /
+b10 ?
+b10 2
+0+
+#155
+b11 /
+b11 ?
+b11 5
+1+
+#160
+bx /
+bx ?
+b11 2
+0+
+#165
+b100 5
+1+
+#170
+0+
