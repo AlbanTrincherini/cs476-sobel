@@ -87,7 +87,13 @@ module profileCi #( parameter[7:0] customId = 8'h00 )
             
 
     always @(posedge clock) begin
-        if(module_en == 1'b1) begin
+    	if(reset == 1'b1) begin
+			c0_on = 1'b0;
+			c1_on = 1'b0;
+			c2_on = 1'b0;
+			c3_on = 1'b0;
+    	end
+        else if(module_en == 1'b1) begin
             if (valueB[0]) c0_on = 1'b1;
             if (valueB[1]) c1_on = 1'b1;
             if (valueB[2]) c2_on = 1'b1;
