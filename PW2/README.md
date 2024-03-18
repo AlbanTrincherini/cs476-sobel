@@ -1,6 +1,6 @@
 Modified files: 
 
-modules/profiler/verilog/profileCi.v (new)
+modules/profiler/verilog/profileCi.v (new) \n
 modules/profiler/verilog/profileCi_tb.v (new)
 (To compile the testbench: iverilog -s profileCiTestBench -o testbench profileCi.v profileCi_tb.v )
 modules/profiler/verilog/counter.v (new)
