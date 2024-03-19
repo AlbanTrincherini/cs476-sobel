@@ -5,6 +5,8 @@
 
 void init_counters();
 void reset_print_counters();
+uint32_t conversionHardware(uint16_t);
+uint32_t conversionSoftware(uint16_t);
 
 int main () {
   volatile uint16_t rgb565[640*480];
@@ -36,10 +38,10 @@ int main () {
     for (int line = 0; line < camParams.nrOfLinesPerImage; line++) {
       for (int pixel = 0; pixel < camParams.nrOfPixelsPerLine; pixel++) {
         uint16_t rgb = swap_u16(rgb565[line*camParams.nrOfPixelsPerLine+pixel]);
-        uint32_t red1 = ((rgb >> 11) & 0x1F) << 3;
-        uint32_t green1 = ((rgb >> 5) & 0x3F) << 2;
-        uint32_t blue1 = (rgb & 0x1F) << 3;
-        uint32_t gray = ((red1*54+green1*183+blue1*19) >> 8)&0xFF;
+        uint32_t grayS = conversionSoftware(rgb);
+        //printf("Software : %d \n", grayS);
+        uint32_t gray = conversionHardware(rgb);
+        //printf("Hardware : %d \n", gray);
         grayscale[line*camParams.nrOfPixelsPerLine+pixel] = gray;
       }
     }
@@ -47,9 +49,24 @@ int main () {
   }
 }
 
+uint32_t conversionHardware(uint16_t rgb) {
+  uint32_t result, rgb32;
+  rgb32 = ((uint32_t) rgb) & 0x0000FFFF;
+  asm volatile ("l.nios_rrr %[out1], %[in1], r0, 0xB": [out1]"=r"(result):
+                                                        [in1]"r"(rgb32));
+  return result;
+}
+
+uint32_t conversionSoftware(uint16_t rgb) {
+    uint32_t red1 = ((rgb >> 11) & 0x1F) << 3;
+    uint32_t green1 = ((rgb >> 5) & 0x3F) << 2;
+    uint32_t blue1 = (rgb & 0x1F) << 3;
+    return ((red1*54+green1*183+blue1*19) >> 8)&0xFF;
+}
+
 void init_counters() {
   uint32_t control = 0b111;
-  asm volatile ("l.nios_rrr r0, r0, %[in2], 0x9"::[in2]"r"(control)); // PROBLEME
+  asm volatile ("l.nios_rrr r0, r0, %[in2], 0x9"::[in2]"r"(control));
 }
 
 void reset_print_counters() {

@@ -330,9 +330,12 @@ module or1420SingleCore ( input wire         clock12MHz,
   /* Profiler signals*/
   wire s_profilerDone;
   wire [31:0] s_profilerResult;
+  /* grayscale conversion signals*/
+  wire s_grayscaleDone;
+  wire [31:0] s_grayscaleResult;
   
-  assign s_cpu1CiDone = s_hdmiDone | s_swapByteDone | s_flashDone | s_cpuFreqDone | s_i2cCiDone | s_delayCiDone | s_camCiDone | s_profilerDone;
-  assign s_cpu1CiResult = s_hdmiResult | s_swapByteResult | s_flashResult | s_cpuFreqResult | s_i2cCiResult | s_camCiResult | s_delayResult | s_profilerResult; 
+  assign s_cpu1CiDone = s_hdmiDone | s_swapByteDone | s_flashDone | s_cpuFreqDone | s_i2cCiDone | s_delayCiDone | s_camCiDone | s_profilerDone | s_grayscaleDone;
+  assign s_cpu1CiResult = s_hdmiResult | s_swapByteResult | s_flashResult | s_cpuFreqResult | s_i2cCiResult | s_camCiResult | s_delayResult | s_profilerResult | s_grayscaleResult; 
 
   or1420Top #( .NOP_INSTRUCTION(32'h1500FFFF)) cpu1
              (.cpuClock(s_systemClock),
@@ -456,7 +459,21 @@ module or1420SingleCore ( input wire         clock12MHz,
       .done(s_profilerDone),
       .result(s_profilerResult)
     );
-             
+      
+  /*
+   *
+   * Here we define the grayscale custom instruction
+   *
+   */
+  rgb565grayscaleIse #(.customInstructionId(8'd11))
+    grayscale(
+      .start(s_cpu1CiStart),
+      .valueA(s_cpu1CiDataA),
+      .iseId(s_cpu1CiN),
+      .done(s_grayscaleDone),
+      .result(s_grayscaleResult)
+    );
+
   /*
    *
    * Here we define the camera interface

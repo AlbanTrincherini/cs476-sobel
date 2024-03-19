@@ -1,0 +1,101 @@
+$date
+	Tue Mar 19 14:10:09 2024
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module rgb565grayscaleIseTestbench $end
+$scope module grayscale $end
+$var wire 1 ! done $end
+$var wire 8 " iseId [7:0] $end
+$var wire 1 # module_en $end
+$var wire 1 $ start $end
+$var wire 32 % valueA [31:0] $end
+$var wire 16 & sumRed [15:0] $end
+$var wire 16 ' sumGreen [15:0] $end
+$var wire 16 ( sumBlue [15:0] $end
+$var wire 16 ) sum [15:0] $end
+$var wire 16 * red4 [15:0] $end
+$var wire 16 + red32 [15:0] $end
+$var wire 16 , red2 [15:0] $end
+$var wire 16 - red16 [15:0] $end
+$var wire 5 . red [4:0] $end
+$var wire 16 / green4 [15:0] $end
+$var wire 16 0 green32 [15:0] $end
+$var wire 16 1 green2 [15:0] $end
+$var wire 16 2 green16 [15:0] $end
+$var wire 16 3 green128 [15:0] $end
+$var wire 16 4 green1 [15:0] $end
+$var wire 6 5 green [5:0] $end
+$var wire 32 6 grayscale [31:0] $end
+$var wire 16 7 blue2 [15:0] $end
+$var wire 16 8 blue16 [15:0] $end
+$var wire 16 9 blue1 [15:0] $end
+$var wire 5 : blue [4:0] $end
+$var parameter 8 ; customInstructionId $end
+$var reg 32 < result [31:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+b1011 ;
+$end
+#0
+$dumpvars
+b0 <
+b0 :
+b0 9
+b0 8
+b0 7
+b0 6
+b0 5
+b0 4
+b0 3
+b0 2
+b0 1
+b0 0
+b0 /
+b0 .
+b0 -
+b0 ,
+b0 +
+b0 *
+b0 )
+b0 (
+b0 '
+b0 &
+b0 %
+1$
+1#
+b1011 "
+1!
+$end
+#20
+b110101 <
+b110101 6
+b1111100000 +
+b111110000 -
+b1111100 *
+b11010001010 &
+b111110 ,
+b11111 .
+b1111110000000 3
+b11111100000 0
+b1111110000 2
+b11111100 /
+b1111110 1
+b10110100001001 '
+b111111 4
+b111111 5
+b111110000 8
+b111110 7
+b11010111100000 )
+b1001001101 (
+b11111 9
+b11111 :
+b1111111111111111 %
+#30
