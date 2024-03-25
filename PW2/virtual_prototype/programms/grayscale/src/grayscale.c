@@ -38,7 +38,7 @@ int main () {
     for (int line = 0; line < camParams.nrOfLinesPerImage; line++) {
       for (int pixel = 0; pixel < camParams.nrOfPixelsPerLine; pixel++) {
         uint16_t rgb = swap_u16(rgb565[line*camParams.nrOfPixelsPerLine+pixel]);
-        uint32_t grayS = conversionSoftware(rgb);
+        //uint32_t grayS = conversionSoftware(rgb);
         //printf("Software : %d \n", grayS);
         uint32_t gray = conversionHardware(rgb);
         //printf("Hardware : %d \n", gray);
