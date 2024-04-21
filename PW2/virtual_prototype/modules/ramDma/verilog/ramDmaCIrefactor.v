@@ -21,6 +21,7 @@ wire module_en = (start == 1'b1 & ciN == customId);
 
 //write || second cycle of read
 assign done = enable_a || read_current != IDLE;
+assign bus_request = dma_current == DMA_REQUEST;
 
 reg [31:0]  r_bus_start;
 reg [8:0]   r_mem_start;
@@ -35,33 +36,99 @@ localparam BLOCK_SIZE       = 3'b011;
 localparam BURST_SIZE       = 3'b100;
 localparam STATUS_CONTROL   = 3'b101;
 
-/*
- * READ signals
- */
+// DMA state possible values
+localparam DMA_IDLE     = 2'b00;
+localparam DMA_REQUEST  = 2'b01;
+localparam DMA_TRANSFER = 2'b10;
+localparam DMA_SETUP    = 2'b11;
+
+// Possible values for status bit
+localparam STATUS_OK    = 1'b0;
+localparam STATUS_ERR   = 1'b1;
+
+reg [1:0]   dma_current, dma_next;
+reg [9:0]   block_rem_c, block_rem_n;
+reg [7:0]   burst_rem_c, burst_rem_n;
+reg [31:0]  r_bus_start_c, r_bus_start_n;
+reg [8:0]   r_mem_start_c, r_mem_start_n;
+reg         r_err_current, r_err_next;
+
+// READ signals
 localparam IDLE             = 3'b111;
 reg [3:0] read_current, read_next;
 
-/*
- * WRITE signals
- */
+// WRITE signals
 wire enable_a = valueA[9];
 wire [8:0] address_a = valueA[8:0];
 wire [31:0] read_a;
 
-//FSM
+//Control signals
+wire dma_status = dma_current != DMA_IDLE;
+wire dma_on     = dma_current == DMA_TRANSFER && bus_valid;
+
+dualPortSSRAM #(.bitwidth(32), .nrOfEntries(512))
+    ram(
+        .clockA(clock),
+        .clockB(~clock),
+        .writeEnableA(enable_a),
+        .writeEnableB(dma_on),
+        .addressA(address_a),
+        .addressB(r_mem_start_c),
+        .dataInA(valueB),
+        .dataInB(bus_in),
+        .dataOutA(read_a),
+        .dataOutB()
+    );
+endmodule
+
+// FSM Synchronous stuff
 always @(posedge clock)
 begin
-    if(reset) read_current <= IDLE;
-    else read_current <= read_next;
+    if(reset) begin
+        read_current <= IDLE;
+
+        r_bus_start     = 32'b0;
+        r_mem_start     = 9'b0;
+        r_block_size    = 10'b0;
+        r_burst_size    = 8'b0;
+
+        dma_current         = DMA_IDLE;
+        r_err_current       = STATUS_OK;
+        block_rem_c         = 10'b0;
+        burst_rem_c         = 8'b0;
+        r_bus_start_c       = 32'b0;
+        r_mem_start_c       = 9'b0;
+    end
+    else begin 
+        read_current <= read_next;
+
+        if(enable_a) begin
+            case (valueA[12:10])
+                BUS_START_ADDR  : r_bus_start   = valueB;
+                MEM_START_ADDR  : r_mem_start   = valueB[8:0];
+                BLOCK_SIZE      : r_block_size  = valueB[9:0];
+                BURST_SIZE      : r_burst_size  = valueB[7:0];
+                STATUS_CONTROL  :; //Nothing to do handled in the DMA logic (writing the control register)
+                default         :; //do nothing
+            endcase
+        end
+
+        dma_current     = dma_next;
+        r_err_current   = r_err_next;
+        block_rem_c     = block_rem_n;
+        burst_rem_c     = burst_rem_n;
+        r_bus_start_c   = r_bus_start_n;
+        r_mem_start_c   = r_mem_start_n;
+    end
 end
 
-//Delay cycle for reads
+// Delay cycle for reads
 always @(read_current, valueA, module_en) begin
     if(read_current == IDLE && valueA[9] == 1'b0 && module_en) read_next = valueA[12:10];
     else read_next = IDLE;    
 end
 
-//Write read result
+// Write read result
 always @(read_a, read_current, reset) begin
     case (read_current)
         MEMORY_LOCATION : result = read_a;
@@ -74,65 +141,7 @@ always @(read_a, read_current, reset) begin
     endcase
 end
 
-
-
-always @(posedge clock) begin
-    if(reset) begin
-        r_bus_start     = 32'b0;
-        r_mem_start     = 9'b0;
-        r_block_size    = 10'b0;
-        r_burst_size    = 8'b0;
-    end
-    else if(enable_a) begin
-        case (valueA[12:10])
-            BUS_START_ADDR  : r_bus_start   = valueB;
-            MEM_START_ADDR  : r_mem_start   = valueB[8:0];
-            BLOCK_SIZE      : r_block_size  = valueB[9:0];
-            BURST_SIZE      : r_burst_size  = valueB[7:0];
-            STATUS_CONTROL  :; //Nothing to do handled in the DMA logic (writing the control register)
-            default         :; //do nothing
-        endcase
-    end
-end
-
-/*
- * DMA logic
- */
-localparam DMA_IDLE     = 2'b00;
-localparam DMA_REQUEST  = 2'b01;
-localparam DMA_TRANSFER = 2'b10;
-localparam DMA_SETUP    = 2'b11;
-
-localparam STATUS_OK    = 1'b0;
-localparam STATUS_ERR   = 1'b1;
-
-reg [1:0]   dma_current, dma_next;
-reg [9:0]   block_rem_c, block_rem_n;
-reg [7:0]   burst_rem_c, burst_rem_n;
-reg [31:0]  r_bus_start_c, r_bus_start_n;
-reg [8:0]   r_mem_start_c, r_mem_start_n;
-reg         r_err_current, r_err_next;
-
-//Dff
-always @(posedge clock) begin
-    if(reset) begin
-        dma_current         = DMA_IDLE;
-        r_err_current       = STATUS_OK;
-        block_rem_c         = 10'b0;
-        burst_rem_c         = 8'b0;
-        r_bus_start_c       = 32'b0;
-        r_mem_start_c       = 9'b0;
-    end
-    else begin 
-        dma_current     = dma_next;
-        r_err_current   = r_err_next;
-        block_rem_c     = block_rem_n;
-        burst_rem_c     = burst_rem_n;
-        r_bus_start_c   = r_bus_start_n;
-        r_mem_start_c   = r_mem_start_n;
-    end
-end
-
+// DMA Logic
 always @(dma_current, r_err_current, bus_error, bus_terminated, bus_grants, valueA, valueB, 
         bus_valid, block_rem_c, burst_rem_c, r_mem_start_c, r_bus_start_c) begin
     r_err_next = r_err_current;
@@ -178,7 +187,7 @@ always @(dma_current, r_err_current, bus_error, bus_terminated, bus_grants, valu
     endcase
 end
 
-//output logic
+// output logic
 always @(dma_current, reset) begin
     if(dma_current == DMA_SETUP) begin
         bus_burst_size  = r_burst_size;
@@ -187,28 +196,5 @@ always @(dma_current, reset) begin
     else begin
         bus_burst_size  = 8'b0;
         bus_out        = 32'b0;
-    end
-    
-end
-
-assign bus_request = dma_current == DMA_REQUEST;
-
-//Control signals
-wire dma_status = dma_current != DMA_IDLE;
-wire dma_on     = dma_current == DMA_TRANSFER && bus_valid;
-
-dualPortSSRAM #(.bitwidth(32), .nrOfEntries(512))
-    ram(
-        .clockA(clock),
-        .clockB(~clock),
-        .writeEnableA(enable_a),
-        .writeEnableB(dma_on),
-        .addressA(address_a),
-        .addressB(r_mem_start_c),
-        .dataInA(valueB),
-        .dataInB(bus_in),
-        .dataOutA(read_a),
-        .dataOutB()
-    );
-endmodule
-            
+    end   
+end         
