@@ -7,10 +7,13 @@ module ramDmaCi   #(parameter[7:0] customId = 8'h00)
                 input wire[7:0] ciN,
                 input wire[31:0] bus_in, 
                 input wire bus_grants,
-                input wire bus_terminated,
                 input wire bus_error,
                 input wire bus_valid,
                 output wire bus_request,
+                output reg bus_begin,
+                output reg bus_read,
+                output reg [3:0] bus_byte_enable,
+                output reg bus_terminated,
                 output reg [7:0] bus_burst_size, //has to be 0 when disabled
                 output reg [31:0] bus_out,
                 output wire done,
@@ -98,15 +101,17 @@ end
 /*
  * DMA logic
  */
-localparam DMA_IDLE     = 2'b00;
-localparam DMA_REQUEST  = 2'b01;
-localparam DMA_TRANSFER = 2'b10;
-localparam DMA_SETUP    = 2'b11;
+localparam DMA_IDLE     = 3'b000;
+localparam DMA_REQUEST  = 3'b001;
+localparam DMA_TRANSFER = 3'b010;
+localparam DMA_SETUP    = 3'b011;
+localparam DMA_END_TR   = 3'b100;
+localparam DMA_END_OP   = 3'b101;
 
 localparam STATUS_OK    = 1'b0;
 localparam STATUS_ERR   = 1'b1;
 
-reg [1:0]   dma_current, dma_next;
+reg [2:0]   dma_current, dma_next;
 reg [9:0]   block_rem_c, block_rem_n;
 reg [7:0]   burst_rem_c, burst_rem_n;
 reg [31:0]  r_bus_start_c, r_bus_start_n;
@@ -133,7 +138,7 @@ always @(posedge clock) begin
     end
 end
 
-always @(dma_current, r_err_current, bus_error, bus_terminated, bus_grants, valueA, valueB, 
+always @(dma_current, r_err_current, bus_error, bus_grants, valueA, valueB, 
         bus_valid, block_rem_c, burst_rem_c, r_mem_start_c, r_bus_start_c) begin
     r_err_next = r_err_current;
     dma_next = dma_current;
@@ -160,20 +165,22 @@ always @(dma_current, r_err_current, bus_error, bus_terminated, bus_grants, valu
         DMA_TRANSFER: begin
             if(bus_error) begin 
                 r_err_next = STATUS_ERR; //there was an error stop transfer
-                dma_next = DMA_IDLE;
+                dma_next = DMA_END_OP;
             end
             else if(bus_valid) begin
                 block_rem_n = block_rem_c - 1;
                 burst_rem_n = burst_rem_c - 1;
                 r_bus_start_n = r_bus_start_c + 4;
                 r_mem_start_n = r_mem_start_c + 1;
-                if(block_rem_n == 10'b0) dma_next = DMA_IDLE;
+                if(block_rem_n == 10'b0) dma_next = DMA_END_OP;
                 if(burst_rem_n == 8'b0) begin
                     burst_rem_n = r_burst_size + 1;
-                    dma_next    = DMA_REQUEST;
+                    dma_next    = DMA_END_TR; //we will restart a new transaction
                 end
             end
         end
+        DMA_END_TR: dma_next = DMA_REQUEST;
+        DMA_END_OP: dma_next = DMA_IDLE;
         default: ;
     endcase
 end
@@ -181,12 +188,23 @@ end
 //output logic
 always @(dma_current, reset) begin
     if(dma_current == DMA_SETUP) begin
+        bus_read        = 1'b1;
+        bus_byte_enable = 4'b1111;
+        bus_begin       = 1'b1;
         bus_burst_size  = r_burst_size;
         bus_out         = r_bus_start_c;
     end 
+    else if(dma_current == DMA_END_TR || dma_current == DMA_END_OP) begin
+        bus_terminated = 1'b1;
+    end
     else begin
+        bus_read        = 1'b0;
+        bus_byte_enable = 4'b0000;
+        bus_begin       = 1'b0;
         bus_burst_size  = 8'b0;
-        bus_out        = 32'b0;
+        bus_out         = 32'b0;
+
+        bus_terminated = 1'b0;
     end
     
 end

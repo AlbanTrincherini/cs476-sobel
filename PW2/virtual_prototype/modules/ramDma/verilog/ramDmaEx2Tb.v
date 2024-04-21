@@ -21,9 +21,9 @@ module dmaEx2;
 
     reg [31:0] bus_in;
     reg bus_grants;
-    reg bus_terminated;
     reg bus_error;
     reg bus_valid;
+    wire bus_terminated;
     wire bus_request;
     wire [7:0] bus_burst_size;
     wire [31:0] bus_out;
@@ -56,7 +56,6 @@ module dmaEx2;
         valueB = 32'b0;
 
         bus_grants = 1'b0;
-        bus_terminated = 1'b0;
         bus_error = 1'b0;
         bus_valid = 1'b0;
         bus_in = 32'b0;
@@ -129,6 +128,9 @@ module dmaEx2;
         bus_in = 32'hFFFF;
         repeat(20) @(negedge clock);
 
+        //read
+        valueA = {{19{1'b0}}, 4'b1010, 9'b000000000};
+        repeat(2) @(negedge clock); 
         //read
         valueA = {{19{1'b0}}, 4'b0000, 9'h10};
         repeat(2) @(negedge clock);
