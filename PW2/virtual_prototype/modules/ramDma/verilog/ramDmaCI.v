@@ -23,7 +23,7 @@ module ramDmaCi   #(parameter[7:0] customId = 8'h00)
 wire module_en = (start == 1'b1 & ciN == customId); 
 
 //write || second cycle of read
-assign done = enable_a || read_current != IDLE;
+assign done = (enable_a && module_en) || (read_current != IDLE);
 
 reg [31:0]  r_bus_start;
 reg [8:0]   r_mem_start;
@@ -151,7 +151,7 @@ always @(dma_current, r_err_current, bus_error, bus_grants, valueA, valueB,
         DMA_IDLE: begin
             if(valueB[0] == 1 && valueA[12:9] == 4'b1011) begin
                 dma_next = DMA_REQUEST;
-                r_err_current = STATUS_OK;
+                r_err_next = STATUS_OK;
                 block_rem_n = r_block_size;
                 burst_rem_n = r_burst_size + 1;
                 r_mem_start_n = r_mem_start;

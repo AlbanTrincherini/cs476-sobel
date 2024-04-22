@@ -1,4 +1,13 @@
 
+State Machine - |or1420SingleCore|ramDmaCi:dma|dma_current
+Name dma_current.DMA_END_OP dma_current.DMA_END_TR dma_current.DMA_SETUP dma_current.DMA_TRANSFER dma_current.DMA_REQUEST dma_current.DMA_IDLE 
+dma_current.DMA_IDLE 0 0 0 0 0 0 
+dma_current.DMA_REQUEST 0 0 0 0 1 1 
+dma_current.DMA_TRANSFER 0 0 0 1 0 1 
+dma_current.DMA_SETUP 0 0 1 0 0 1 
+dma_current.DMA_END_TR 0 1 0 0 0 1 
+dma_current.DMA_END_OP 1 0 0 0 0 1 
+
 State Machine - |or1420SingleCore|busArbiter:arbiter|s_stateReg
 Name s_stateReg.INIT_BUS_ERROR s_stateReg.REMOVE s_stateReg.END_TRANSACTION s_stateReg.BUS_ERROR s_stateReg.SERVICING s_stateReg.WAIT_BEGIN s_stateReg.GRANT s_stateReg.IDLE 
 s_stateReg.IDLE 0 0 0 0 0 0 0 0 
