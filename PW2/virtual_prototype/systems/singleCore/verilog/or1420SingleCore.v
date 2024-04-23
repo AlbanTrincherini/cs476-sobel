@@ -704,6 +704,7 @@ wire s_dmaGranted;
       .bus_grants(s_dmaGranted),
       .bus_error(s_busError),
       .bus_valid(s_dataValid),
+      .bus_busy_in(s_busy),
       .bus_request(s_dmaReq),
       .bus_begin(s_dmaBegin),
       .bus_read(s_dmaRead),
