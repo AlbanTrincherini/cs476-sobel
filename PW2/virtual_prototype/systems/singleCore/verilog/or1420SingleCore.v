@@ -333,6 +333,9 @@ module or1420SingleCore ( input wire         clock12MHz,
   /* grayscale conversion signals*/
   wire s_grayscaleDone;
   wire [31:0] s_grayscaleResult;
+  /* DMA signals */
+  wire s_dmaDone;
+  wire [31:0] s_dmaResult;
   
   assign s_cpu1CiDone = s_hdmiDone | s_swapByteDone | s_flashDone | s_cpuFreqDone | s_i2cCiDone | s_delayCiDone | s_camCiDone | s_profilerDone | s_grayscaleDone | s_dmaDone;
   assign s_cpu1CiResult = s_hdmiResult | s_swapByteResult | s_flashResult | s_cpuFreqResult | s_i2cCiResult | s_camCiResult | s_delayResult | s_profilerResult | s_grayscaleResult | s_dmaResult; 
@@ -644,14 +647,16 @@ module or1420SingleCore ( input wire         clock12MHz,
    */
  wire [31:0] s_busRequests, s_busGrants;
  wire        s_arbBusError, s_arbEndTransaction;
- 
+ wire s_dmaReq;
+wire s_dmaGranted;
+
  assign s_busRequests[31] = s_cpu1DcacheRequestBus;
  assign s_busRequests[30] = s_cpu1IcacheRequestBus;
  assign s_busRequests[29] = s_hdmiRequestBus;
  assign s_busRequests[28] = s_camReqBus;
  assign s_busRequests[27] = s_dmaReq;
  assign s_busRequests[26:0] = 27'd0;
- 
+
  assign s_cpu1DcacheBusAccessGranted = s_busGrants[31];
  assign s_cpu1IcacheBusAccessGranted = s_busGrants[30];
  assign s_hdmiBusgranted             = s_busGrants[29];
@@ -678,16 +683,14 @@ module or1420SingleCore ( input wire         clock12MHz,
    * Here we define the ram/dma ci
    *
    */
-  wire s_dmaGranted;
-  wire s_dmaReq;
+  
   wire s_dmaBegin;
   wire s_dmaRead;
   wire [3:0] s_dmaByteEnables;
   wire s_dmaTerminated;
   wire [7:0] s_dmaBurstSize;
   wire [31:0] s_dmaAddressData;
-  wire s_dmaDone;
-  wire [31:0] s_dmaResult;
+
 
   ramDmaCi #(.customId(8'd14))
     dma (

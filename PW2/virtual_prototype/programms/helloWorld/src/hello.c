@@ -16,13 +16,7 @@ int main () {
   uint32_t busAddress = (uint32_t) &memoryArray[0];
   uint32_t extracted_word;
 
-  printf("DEBUGING DMA\n");
-  /* uint32_t address = 0x00000uint32_t input(uint32_t code, uint32_t addr) {
-211;
-  uint32_t res = 0;
-  uint32_t writeValue = 45;
-  asm volatile("l.nios_rrr %[out1],%[in1],%[in2],0x2" : [out1] "=r"(res) : [in1] "r"(address), [in2] "r"(writeValue));
-  printf("result after read %d\n", res); */
+  printf("DEBUGGING DMA\n");
 
   printf("WRITE TEST\n");
   write(input(1, 0), 12);
@@ -33,7 +27,6 @@ int main () {
   write(input(0b0011, 0), busAddress);
   read(input(0b0010, 0));
   printf("MemoryStartAddress TEST (0)\n");
-  //read_write_ctrl(0b0100, 0);
   write(input(0b0101, 0), 0);
   read(input(0b0100, 0));
   printf("BlockSize TEST (17)\n");
@@ -43,18 +36,18 @@ int main () {
   write(input(0b1001, 0), 4);
   read(input(0b1000, 0));
 
-  /*for(int i = 0; i < 64; i++) {
+  for(int i = 0; i < 64; i++) {
     memoryArray[i] = i;
-  }*/
+  }
 
   printf("After init\n");
-  write(input(0b1011, 0), 0);
+  write(input(0b1011, 0), 1);
   printf("After start\n");
   polling();
-  for(int i = 0; i < 17; i++) {
+  for(int i = 0; i < 18; i++) {
     read(i);
   }
-  printf("END DEBUG DMA\n");
+  printf("THE END\n");
   return 0;
 }
 
@@ -62,8 +55,9 @@ void polling() {
   uint32_t res = 1;
   uint32_t valueA = input(0b1010, 0);
   uint32_t valueB = 0;
-  while(res == 1) {
+  while((res & 0b1) == 0b1) {
     asm volatile("l.nios_rrr %[out1],%[in1],%[in2],0xE" : [out1] "=r"(res) : [in1] "r"(valueA), [in2] "r"(valueB));
+    printf("%d\n", res);
   }
 }
 
