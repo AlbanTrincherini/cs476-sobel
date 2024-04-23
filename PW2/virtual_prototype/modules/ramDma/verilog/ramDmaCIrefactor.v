@@ -7,64 +7,17 @@ module ramDmaCi   #(parameter[7:0] customId = 8'h00)
                 input wire[7:0] ciN,
                 input wire[31:0] bus_in, 
                 input wire bus_grants,
-                input wire bus_terminated,
                 input wire bus_error,
                 input wire bus_valid,
                 output wire bus_request,
+                output reg bus_begin,
+                output reg bus_read,
+                output reg [3:0] bus_byte_enable,
+                output reg bus_terminated,
                 output reg [7:0] bus_burst_size, //has to be 0 when disabled
                 output reg [31:0] bus_out,
                 output wire done,
                 output reg[31:0] result);
-
-
-wire module_en = (start == 1'b1 & ciN == customId); 
-
-//write || second cycle of read
-assign done = enable_a || read_current != IDLE;
-assign bus_request = dma_current == DMA_REQUEST;
-
-reg [31:0]  r_bus_start;
-reg [8:0]   r_mem_start;
-reg [9:0]   r_block_size;
-reg [7:0]   r_burst_size;
-
-// Possible values for A[12:10]
-localparam MEMORY_LOCATION  = 3'b000;
-localparam BUS_START_ADDR   = 3'b001;
-localparam MEM_START_ADDR   = 3'b010;
-localparam BLOCK_SIZE       = 3'b011;
-localparam BURST_SIZE       = 3'b100;
-localparam STATUS_CONTROL   = 3'b101;
-
-// DMA state possible values
-localparam DMA_IDLE     = 2'b00;
-localparam DMA_REQUEST  = 2'b01;
-localparam DMA_TRANSFER = 2'b10;
-localparam DMA_SETUP    = 2'b11;
-
-// Possible values for status bit
-localparam STATUS_OK    = 1'b0;
-localparam STATUS_ERR   = 1'b1;
-
-reg [1:0]   dma_current, dma_next;
-reg [9:0]   block_rem_c, block_rem_n;
-reg [7:0]   burst_rem_c, burst_rem_n;
-reg [31:0]  r_bus_start_c, r_bus_start_n;
-reg [8:0]   r_mem_start_c, r_mem_start_n;
-reg         r_err_current, r_err_next;
-
-// READ signals
-localparam IDLE             = 3'b111;
-reg [3:0] read_current, read_next;
-
-// WRITE signals
-wire enable_a = valueA[9];
-wire [8:0] address_a = valueA[8:0];
-wire [31:0] read_a;
-
-//Control signals
-wire dma_status = dma_current != DMA_IDLE;
-wire dma_on     = dma_current == DMA_TRANSFER && bus_valid;
 
 dualPortSSRAM #(.bitwidth(32), .nrOfEntries(512))
     ram(
@@ -79,9 +32,64 @@ dualPortSSRAM #(.bitwidth(32), .nrOfEntries(512))
         .dataOutA(read_a),
         .dataOutB()
     );
-endmodule
 
-// FSM Synchronous stuff
+wire module_en = (start == 1'b1 & ciN == customId); 
+
+//write || second cycle of read
+assign done = (enable_a && module_en) || (read_current != IDLE);
+assign bus_request = dma_current == DMA_REQUEST;
+
+//Control signals
+wire dma_status = dma_current != DMA_IDLE;
+wire dma_on     = dma_current == DMA_TRANSFER && bus_valid;
+
+reg [31:0]  r_bus_start;
+reg [8:0]   r_mem_start;
+reg [9:0]   r_block_size;
+reg [7:0]   r_burst_size;
+
+// Possible values for A[12:10]
+localparam MEMORY_LOCATION  = 3'b000;
+localparam BUS_START_ADDR   = 3'b001;
+localparam MEM_START_ADDR   = 3'b010;
+localparam BLOCK_SIZE       = 3'b011;
+localparam BURST_SIZE       = 3'b100;
+localparam STATUS_CONTROL   = 3'b101;
+localparam IDLE             = 3'b111;
+
+/*
+ * READ signals
+ */
+reg [3:0] read_current, read_next;
+
+/*
+ * WRITE signals
+ */
+wire enable_a = valueA[9];
+wire [8:0] address_a = valueA[8:0];
+wire [31:0] read_a;
+
+/*
+ * DMA logic signals
+ */
+localparam DMA_IDLE     = 3'b000;
+localparam DMA_REQUEST  = 3'b001;
+localparam DMA_TRANSFER = 3'b010;
+localparam DMA_SETUP    = 3'b011;
+localparam DMA_END_TR   = 3'b100;
+localparam DMA_END_OP   = 3'b101;
+
+localparam STATUS_OK    = 1'b0;
+localparam STATUS_ERR   = 1'b1;
+
+reg [2:0]   dma_current, dma_next;
+reg [9:0]   block_rem_c, block_rem_n;
+reg [7:0]   burst_rem_c, burst_rem_n;
+reg [31:0]  r_bus_start_c, r_bus_start_n;
+reg [8:0]   r_mem_start_c, r_mem_start_n;
+reg         r_err_current, r_err_next;
+
+//FSM synchronous
 always @(posedge clock)
 begin
     if(reset) begin
@@ -98,7 +106,7 @@ begin
         burst_rem_c         = 8'b0;
         r_bus_start_c       = 32'b0;
         r_mem_start_c       = 9'b0;
-    end
+    end 
     else begin 
         read_current <= read_next;
 
@@ -122,13 +130,13 @@ begin
     end
 end
 
-// Delay cycle for reads
+//Delay cycle for reads
 always @(read_current, valueA, module_en) begin
     if(read_current == IDLE && valueA[9] == 1'b0 && module_en) read_next = valueA[12:10];
     else read_next = IDLE;    
 end
 
-// Write read result
+//Write read result
 always @(read_a, read_current, reset) begin
     case (read_current)
         MEMORY_LOCATION : result = read_a;
@@ -142,7 +150,7 @@ always @(read_a, read_current, reset) begin
 end
 
 // DMA Logic
-always @(dma_current, r_err_current, bus_error, bus_terminated, bus_grants, valueA, valueB, 
+always @(dma_current, r_err_current, bus_error, bus_grants, valueA, valueB, 
         bus_valid, block_rem_c, burst_rem_c, r_mem_start_c, r_bus_start_c) begin
     r_err_next = r_err_current;
     dma_next = dma_current;
@@ -155,7 +163,7 @@ always @(dma_current, r_err_current, bus_error, bus_terminated, bus_grants, valu
         DMA_IDLE: begin
             if(valueB[0] == 1 && valueA[12:9] == 4'b1011) begin
                 dma_next = DMA_REQUEST;
-                r_err_current = STATUS_OK;
+                r_err_next = STATUS_OK;
                 block_rem_n = r_block_size;
                 burst_rem_n = r_burst_size + 1;
                 r_mem_start_n = r_mem_start;
@@ -169,32 +177,47 @@ always @(dma_current, r_err_current, bus_error, bus_terminated, bus_grants, valu
         DMA_TRANSFER: begin
             if(bus_error) begin 
                 r_err_next = STATUS_ERR; //there was an error stop transfer
-                dma_next = DMA_IDLE;
+                dma_next = DMA_END_OP;
             end
             else if(bus_valid) begin
                 block_rem_n = block_rem_c - 1;
                 burst_rem_n = burst_rem_c - 1;
                 r_bus_start_n = r_bus_start_c + 4;
                 r_mem_start_n = r_mem_start_c + 1;
-                if(block_rem_n == 10'b0) dma_next = DMA_IDLE;
+                if(block_rem_n == 10'b0) dma_next = DMA_END_OP;
                 if(burst_rem_n == 8'b0) begin
                     burst_rem_n = r_burst_size + 1;
-                    dma_next    = DMA_REQUEST;
+                    dma_next    = DMA_END_TR; //we will restart a new transaction
                 end
             end
         end
+        DMA_END_TR: dma_next = DMA_REQUEST;
+        DMA_END_OP: dma_next = DMA_IDLE;
         default: ;
     endcase
 end
 
-// output logic
+//output logic
 always @(dma_current, reset) begin
     if(dma_current == DMA_SETUP) begin
+        bus_read        = 1'b1;
+        bus_byte_enable = 4'b1111;
+        bus_begin       = 1'b1;
         bus_burst_size  = r_burst_size;
         bus_out         = r_bus_start_c;
     end 
+    else if(dma_current == DMA_END_TR || dma_current == DMA_END_OP) begin
+        bus_terminated = 1'b1;
+    end
     else begin
+        bus_read        = 1'b0;
+        bus_byte_enable = 4'b0000;
+        bus_begin       = 1'b0;
         bus_burst_size  = 8'b0;
-        bus_out        = 32'b0;
+        bus_out         = 32'b0;
+
+        bus_terminated = 1'b0;
     end   
-end         
+end
+
+endmodule    
