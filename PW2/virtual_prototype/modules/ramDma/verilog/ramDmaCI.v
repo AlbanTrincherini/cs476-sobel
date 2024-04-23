@@ -23,7 +23,7 @@ module ramDmaCi   #(parameter[7:0] customId = 8'h00)
 wire module_en = (start == 1'b1 & ciN == customId); 
 
 //write || second cycle of read
-assign done = (enable_a && module_en) || (read_current != IDLE);
+assign done = enable_a || (read_current != IDLE);
 
 reg [31:0]  r_bus_start;
 reg [8:0]   r_mem_start;
@@ -47,7 +47,8 @@ reg [3:0] read_current, read_next;
 /*
  * WRITE signals
  */
-wire enable_a = valueA[9];
+wire enable_a = (valueA[9] == 1'b1) && module_en;
+wire enable_a_write_ram = enable_a && valueA[12:10] == MEMORY_LOCATION;
 wire [8:0] address_a = valueA[8:0];
 wire [31:0] read_a;
 
@@ -149,7 +150,7 @@ always @(dma_current, r_err_current, bus_error, bus_grants, valueA, valueB,
     
     case (dma_current)
         DMA_IDLE: begin
-            if(valueB[0] == 1 && valueA[12:9] == 4'b1011) begin
+            if((valueB[0] == 1'b1) && (valueA[12:9] == 4'b1011) && module_en) begin
                 dma_next = DMA_REQUEST;
                 r_err_next = STATUS_OK;
                 block_rem_n = r_block_size;
@@ -219,7 +220,7 @@ dualPortSSRAM #(.bitwidth(32), .nrOfEntries(512))
     ram(
         .clockA(clock),
         .clockB(~clock),
-        .writeEnableA(enable_a),
+        .writeEnableA(enable_a_write_ram),
         .writeEnableB(dma_on),
         .addressA(address_a),
         .addressB(r_mem_start_c),

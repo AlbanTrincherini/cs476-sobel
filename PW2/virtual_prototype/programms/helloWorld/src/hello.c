@@ -6,7 +6,6 @@
 void read(uint32_t valueA);
 void write(uint32_t valueA, uint32_t valueB);
 uint32_t input(uint32_t code, uint32_t addr);
-void read_write_ctrl(uint32_t code, uint32_t value);
 void polling();
 
 int main () {
@@ -31,20 +30,25 @@ int main () {
   read(0);
 
   printf("BusStartAddress TEST (%d)\n", busAddress);
-  read_write_ctrl(0b0010, busAddress);
+  write(input(0b0011, 0), busAddress);
+  read(input(0b0010, 0));
   printf("MemoryStartAddress TEST (0)\n");
-  read_write_ctrl(0b0100, 0);
+  //read_write_ctrl(0b0100, 0);
+  write(input(0b0101, 0), 0);
+  read(input(0b0100, 0));
   printf("BlockSize TEST (17)\n");
-  read_write_ctrl(0b0110, 17);
+  write(input(0b0111, 0), 17);
+  read(input(0b0110, 0));
   printf("BurstSize TEST (4)\n");
-  read_write_ctrl(0b1000, 4);
+  write(input(0b1001, 0), 4);
+  read(input(0b1000, 0));
 
   /*for(int i = 0; i < 64; i++) {
     memoryArray[i] = i;
   }*/
 
   printf("After init\n");
-  read_write_ctrl(0b1010, 1);
+  write(input(0b1011, 0), 0);
   printf("After start\n");
   polling();
   for(int i = 0; i < 17; i++) {
@@ -60,7 +64,6 @@ void polling() {
   uint32_t valueB = 0;
   while(res == 1) {
     asm volatile("l.nios_rrr %[out1],%[in1],%[in2],0xE" : [out1] "=r"(res) : [in1] "r"(valueA), [in2] "r"(valueB));
-    printf("Woooo\n");
   }
 }
 
@@ -74,17 +77,9 @@ void read(uint32_t valueA) {
 void write(uint32_t valueA, uint32_t valueB) {
   uint32_t res = 0;
   asm volatile("l.nios_rrr %[out1],%[in1],%[in2],0xE" : [out1] "=r"(res) : [in1] "r"(valueA), [in2] "r"(valueB));
-  if (res != 0) {
-    printf("PROBLEMEEEEEEEE");
-  }
+  printf("sortie de write\n");
 }
 
 uint32_t input(uint32_t code, uint32_t addr) {
-  return code << 9 | addr;
-}
-
-void read_write_ctrl(uint32_t code, uint32_t value){
-  uint32_t ctrl = input(code, 0);
-  write(ctrl | 1 << 9, value);
-  read(ctrl);
+  return (code << 9) | addr;
 }
