@@ -22,14 +22,6 @@ module ramDmaCi   #(parameter[7:0] customId = 8'h00)
 
 wire module_en = (start == 1'b1 & ciN == customId); 
 
-//write || second cycle of read
-assign done = enable_a || (read_current != IDLE);
-
-reg [31:0]  r_bus_start;
-reg [8:0]   r_mem_start;
-reg [9:0]   r_block_size;
-reg [7:0]   r_burst_size;
-
 // Possible values for A[12:10]
 localparam MEMORY_LOCATION  = 3'b000;
 localparam BUS_START_ADDR   = 3'b001;
@@ -42,7 +34,7 @@ localparam STATUS_CONTROL   = 3'b101;
  * READ signals
  */
 localparam IDLE             = 3'b111;
-reg [3:0] read_current, read_next;
+reg [2:0] read_current, read_next;
 
 /*
  * WRITE signals
@@ -51,6 +43,40 @@ wire enable_a = (valueA[9] == 1'b1) && module_en;
 wire enable_a_write_ram = enable_a && valueA[12:10] == MEMORY_LOCATION;
 wire [8:0] address_a = valueA[8:0];
 wire [31:0] read_a;
+
+
+//write || second cycle of read
+assign done = enable_a || (read_current != IDLE);
+
+//DMA state signals
+localparam DMA_IDLE     = 3'b000;
+localparam DMA_REQUEST  = 3'b001;
+localparam DMA_TRANSFER = 3'b010;
+localparam DMA_SETUP    = 3'b011;
+localparam DMA_END_TR   = 3'b100;
+localparam DMA_END_OP   = 3'b101;
+
+localparam STATUS_OK    = 1'b0;
+localparam STATUS_ERR   = 1'b1;
+
+reg [2:0]   dma_current, dma_next;
+reg [9:0]   block_rem_c, block_rem_n;
+reg [7:0]   burst_rem_c, burst_rem_n;
+reg [31:0]  r_bus_start_c, r_bus_start_n;
+reg [8:0]   r_mem_start_c, r_mem_start_n;
+reg         r_err_current, r_err_next;
+
+//DMA Control signals
+wire dma_status = dma_current != DMA_IDLE;
+wire dma_on     = dma_current == DMA_TRANSFER && bus_valid;
+assign bus_request = dma_current == DMA_REQUEST;
+
+//CI state signals
+reg [31:0]  r_bus_start;
+reg [8:0]   r_mem_start;
+reg [9:0]   r_block_size;
+reg [7:0]   r_burst_size;
+
 
 //FSM
 always @(posedge clock)
@@ -102,22 +128,6 @@ end
 /*
  * DMA logic
  */
-localparam DMA_IDLE     = 3'b000;
-localparam DMA_REQUEST  = 3'b001;
-localparam DMA_TRANSFER = 3'b010;
-localparam DMA_SETUP    = 3'b011;
-localparam DMA_END_TR   = 3'b100;
-localparam DMA_END_OP   = 3'b101;
-
-localparam STATUS_OK    = 1'b0;
-localparam STATUS_ERR   = 1'b1;
-
-reg [2:0]   dma_current, dma_next;
-reg [9:0]   block_rem_c, block_rem_n;
-reg [7:0]   burst_rem_c, burst_rem_n;
-reg [31:0]  r_bus_start_c, r_bus_start_n;
-reg [8:0]   r_mem_start_c, r_mem_start_n;
-reg         r_err_current, r_err_next;
 
 //Dff
 always @(posedge clock) begin
@@ -214,15 +224,10 @@ always @(dma_current, reset) begin
         bus_out         = 32'b0;
 
         bus_terminated = 1'b0;
-    end
-    
+    end  
 end
 
-assign bus_request = dma_current == DMA_REQUEST;
 
-//Control signals
-wire dma_status = dma_current != DMA_IDLE;
-wire dma_on     = dma_current == DMA_TRANSFER && bus_valid;
 
 dualPortSSRAM #(.bitwidth(32), .nrOfEntries(512))
     ram(
