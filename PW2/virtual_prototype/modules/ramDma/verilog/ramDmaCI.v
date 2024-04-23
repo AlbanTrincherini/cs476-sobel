@@ -194,9 +194,17 @@ always @(dma_current, reset) begin
         bus_begin       = 1'b1;
         bus_burst_size  = r_burst_size;
         bus_out         = r_bus_start_c;
+        
+        bus_terminated = 1'b0;
     end 
     else if(dma_current == DMA_END_TR || dma_current == DMA_END_OP) begin
         bus_terminated = 1'b1;
+
+        bus_read        = 1'b0;
+        bus_byte_enable = 4'b0000;
+        bus_begin       = 1'b0;
+        bus_burst_size  = 8'b0;
+        bus_out         = 32'b0;
     end
     else begin
         bus_read        = 1'b0;
