@@ -678,6 +678,7 @@ module or1420SingleCore ( input wire         clock12MHz,
    * Here we define the ram/dma ci
    *
    */
+  wire s_dmaGranted;
   wire s_dmaReq;
   wire s_dmaBegin;
   wire s_dmaRead;
