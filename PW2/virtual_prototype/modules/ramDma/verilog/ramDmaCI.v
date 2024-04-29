@@ -66,12 +66,12 @@ reg [7:0]   burst_rem_c, burst_rem_n;
 reg [31:0]  r_bus_start_c, r_bus_start_n;
 reg [8:0]   r_mem_start_c, r_mem_start_n;
 reg         r_err_current, r_err_next;
-reg         dma_read_n_write;
+reg         dma_read_n_write_c, dma_read_n_write_n;
 wire [31:0] read_b;
 
 //DMA Control signals
 wire dma_status = dma_current != DMA_IDLE;
-wire dma_write_ram  = dma_current == DMA_TRANSFER && bus_valid && dma_read_n_write;
+wire dma_write_ram  = dma_current == DMA_TRANSFER && bus_valid && dma_read_n_write_c;
 assign bus_request  = dma_current == DMA_REQUEST;
 
 //CI state signals
@@ -141,6 +141,7 @@ always @(posedge clock) begin
         burst_rem_c         = 8'b0;
         r_bus_start_c       = 32'b0;
         r_mem_start_c       = 9'b0;
+        dma_read_n_write_c  = 1'b0;
     end
     else begin 
         dma_current     = dma_next;
@@ -149,28 +150,30 @@ always @(posedge clock) begin
         burst_rem_c     = burst_rem_n;
         r_bus_start_c   = r_bus_start_n;
         r_mem_start_c   = r_mem_start_n;
+        dma_read_n_write_c = dma_read_n_write_n;
     end
 end
 
 always @(dma_current, r_err_current, bus_error, bus_grants, valueA, valueB, 
-        bus_valid, block_rem_c, burst_rem_c, r_mem_start_c, r_bus_start_c, module_en) begin
+        bus_valid, block_rem_c, burst_rem_c, r_mem_start_c, r_bus_start_c, module_en, bus_busy_in) begin
     r_err_next = r_err_current;
     dma_next = dma_current;
     block_rem_n = block_rem_c;
     burst_rem_n = burst_rem_c;
     r_mem_start_n = r_mem_start_c;
     r_bus_start_n = r_bus_start_c;
+    dma_read_n_write_n = dma_read_n_write_c;
     
     case (dma_current)
         DMA_IDLE: begin
-            if((valueB[1:0] == 1'b01 || valueB[1:0] = 1'b10) && (valueA[12:9] == 4'b1011) && module_en) begin
+            if((valueB[1:0] == 2'b01 || valueB[1:0] == 2'b10) && (valueA[12:9] == 4'b1011) && module_en) begin
                 dma_next = DMA_REQUEST;
                 r_err_next = STATUS_OK;
                 block_rem_n = r_block_size;
                 burst_rem_n = r_burst_size + 1;
                 r_mem_start_n = r_mem_start;
                 r_bus_start_n = r_bus_start;
-                dma_read_n_write = valueB == 1'b01; //01 is a read from bus else write to bus
+                dma_read_n_write_n = valueB == 2'b01; //01 is a read from bus else write to bus
             end
         end
         DMA_REQUEST: begin
@@ -182,13 +185,13 @@ always @(dma_current, r_err_current, bus_error, bus_grants, valueA, valueB,
                 r_err_next = STATUS_ERR; //there was an error stop transfer
                 dma_next = DMA_END_OP;
             end
-            else if((bus_valid && dma_read_n_write) || (!bus_busy_in && !dma_read_n_write)) begin //Bus reading, data has to be valid || Bus writing, slave has to not be busy
+            else if((bus_valid && dma_read_n_write_c) || (!bus_busy_in && !dma_read_n_write_c)) begin //Bus reading, data has to be valid || Bus writing, slave has to not be busy
                 block_rem_n = block_rem_c - 1;
                 burst_rem_n = burst_rem_c - 1;
                 r_bus_start_n = r_bus_start_c + 4;
                 r_mem_start_n = r_mem_start_c + 1;
                 if(block_rem_n == 10'b0) dma_next = DMA_END_OP;
-                if(burst_rem_n == 8'b0) begin
+                else if(burst_rem_n == 8'b0) begin
                     burst_rem_n = r_burst_size + 1;
                     dma_next    = DMA_END_TR; //we will restart a new transaction
                 end
@@ -203,7 +206,7 @@ end
 //output logic
 always @(dma_current, reset) begin
     if(dma_current == DMA_SETUP) begin
-        bus_read        = dma_read_n_write;
+        bus_read        = dma_read_n_write_c;
         bus_byte_enable = 4'b1111;
         bus_begin       = 1'b1;
         bus_burst_size  = r_burst_size;
@@ -220,7 +223,7 @@ always @(dma_current, reset) begin
         bus_out         = 32'b0;
     end
     else if(dma_current == DMA_TRANSFER) begin
-        if(dma_read_n_write) bus_out = 32'b0;
+        if(dma_read_n_write_c) bus_out = 32'b0;
         else bus_out = read_b;
         bus_read        = 1'b0;
         bus_byte_enable = 4'b0000;

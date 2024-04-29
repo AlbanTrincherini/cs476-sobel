@@ -1,15 +1,16 @@
-## Modified files: 
+## Comments
+The code works on the testbenches we made (confirmed with Prof. Kluter) but we didn't manage to make it work on the FPGA. For some reason we couldn't find, starting a DMA transfer would freeze the CPU. After many hours, we couldn't trace back the problem to ramDmaCI or singleCore.v and thus decided to submit this partially working version.
 
-- virtual_prototype/modules/rgb565grayscale/verilog/rgb565grayscaleIse.v (new)
-- virtual_prototype/modules/rgb565grayscale/verilog/rgb565grayscaleIse_tb.v (new)
-- (To compile the testbench: iverilog -s rgb565grayscaleIseTestbench -o testbench rgb565grayscaleIse.v rgb565grayscaleIse_tb.v )
-- virtual_prototype/programms/grayscale/src/grayscale.c
-- virtual_prototype/systems/singleCore/verilog/or1420SingleCore.v 
-- virtual_prototype/systems/singleCore/config/project.files
-
-
-## Observed results
-
-- The number of cycles for the software implementation are : 31247857 execution cycles with 19312121 stall cycles = 11935736 "working cycles (we measured the cycles for one full execution of the for loop).
-- The number of cycles for the hardware implementation are : 25362131 execution cycles with 18680495 stall cycles = 6681636 "working" cycles
-- This corresponds to an execution time decrease of approximately 44%.
+You should be able to run the testbenches we made with the following commands and replacing _ by the number of the exercise tested: 
+iverilog -s dmaEx_ dualSSRAM.v ramDmaCI.v ramDmaEx_Tb.v
+./a.out
+gtkwave ramEx_.vcd
+## Modified files
+- virtual_prototype/modules/ramDma/verilog/dualSSRAM.v (new, given in the course)
+- virtual_prototype/modules/ramDma/verilog/ramDmaCI.v (new)
+- virtual_prototype/modules/ramDma/verilog/ramDmaEx1Tb.v (new)
+- virtual_prototype/modules/ramDma/verilog/ramDmaEx2Tb.v (new)
+- virtual_prototype/modules/ramDma/verilog/ramDmaEx3Tb.v (new)
+- virtual_prototype/systems/singleCore/verilog/or1420SingleCore.v (modified)
+- virtual_prototype/systems/singleCore/config/project.files (modified)
+- virtual_prototype/programms/helloWorld/src/hello.c (modified, used for testing final implementation on the gecko)
