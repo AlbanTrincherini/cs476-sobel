@@ -3,8 +3,11 @@ The code works on the testbenches we made (confirmed with Prof. Kluter) but we d
 
 You should be able to run the testbenches we made with the following commands and replacing _ by the number of the exercise tested: 
 iverilog -s dmaEx_ dualSSRAM.v ramDmaCI.v ramDmaEx_Tb.v
+
 ./a.out
+
 gtkwave ramEx_.vcd
+
 ## Modified files
 - virtual_prototype/modules/ramDma/verilog/dualSSRAM.v (new, given in the course)
 - virtual_prototype/modules/ramDma/verilog/ramDmaCI.v (new)
