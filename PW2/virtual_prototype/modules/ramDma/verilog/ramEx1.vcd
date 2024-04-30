@@ -1,0 +1,214 @@
+$date
+	Mon Apr 29 17:27:52 2024
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module dmaEx1 $end
+$scope module dma $end
+$var wire 1 ! bus_busy_in $end
+$var wire 1 " bus_error $end
+$var wire 1 # bus_grants $end
+$var wire 32 $ bus_in [31:0] $end
+$var wire 1 % bus_valid $end
+$var wire 8 & ciN [7:0] $end
+$var wire 1 ' clock $end
+$var wire 1 ( dma_write_ram $end
+$var wire 1 ) done $end
+$var wire 1 * enable_a $end
+$var wire 1 + enable_a_write_ram $end
+$var wire 1 , module_en $end
+$var wire 1 - reset $end
+$var wire 1 . start $end
+$var wire 32 / valueA [31:0] $end
+$var wire 32 0 valueB [31:0] $end
+$var wire 32 1 read_b [31:0] $end
+$var wire 32 2 read_a [31:0] $end
+$var wire 1 3 dma_status $end
+$var wire 1 4 bus_request $end
+$var wire 9 5 address_a [8:0] $end
+$var parameter 3 6 BLOCK_SIZE $end
+$var parameter 3 7 BURST_SIZE $end
+$var parameter 3 8 BUS_START_ADDR $end
+$var parameter 3 9 DMA_END_OP $end
+$var parameter 3 : DMA_END_TR $end
+$var parameter 3 ; DMA_IDLE $end
+$var parameter 3 < DMA_REQUEST $end
+$var parameter 3 = DMA_SETUP $end
+$var parameter 3 > DMA_TRANSFER $end
+$var parameter 3 ? IDLE $end
+$var parameter 3 @ MEMORY_LOCATION $end
+$var parameter 3 A MEM_START_ADDR $end
+$var parameter 3 B STATUS_CONTROL $end
+$var parameter 1 C STATUS_ERR $end
+$var parameter 1 D STATUS_OK $end
+$var parameter 8 E customId $end
+$var reg 10 F block_rem_c [9:0] $end
+$var reg 10 G block_rem_n [9:0] $end
+$var reg 8 H burst_rem_c [7:0] $end
+$var reg 8 I burst_rem_n [7:0] $end
+$var reg 1 J bus_begin $end
+$var reg 8 K bus_burst_size [7:0] $end
+$var reg 4 L bus_byte_enable [3:0] $end
+$var reg 32 M bus_out [31:0] $end
+$var reg 1 N bus_read $end
+$var reg 1 O bus_terminated $end
+$var reg 3 P dma_current [2:0] $end
+$var reg 3 Q dma_next [2:0] $end
+$var reg 1 R dma_read_n_write_c $end
+$var reg 1 S dma_read_n_write_n $end
+$var reg 10 T r_block_size [9:0] $end
+$var reg 8 U r_burst_size [7:0] $end
+$var reg 32 V r_bus_start [31:0] $end
+$var reg 32 W r_bus_start_c [31:0] $end
+$var reg 32 X r_bus_start_n [31:0] $end
+$var reg 1 Y r_err_current $end
+$var reg 1 Z r_err_next $end
+$var reg 9 [ r_mem_start [8:0] $end
+$var reg 9 \ r_mem_start_c [8:0] $end
+$var reg 9 ] r_mem_start_n [8:0] $end
+$var reg 3 ^ read_current [2:0] $end
+$var reg 3 _ read_next [2:0] $end
+$var reg 32 ` result [31:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+b1001 E
+0D
+1C
+b101 B
+b10 A
+b0 @
+b111 ?
+b10 >
+b11 =
+b1 <
+b0 ;
+b100 :
+b101 9
+b1 8
+b100 7
+b11 6
+$end
+#0
+$dumpvars
+b0 `
+b111 _
+bx ^
+bx ]
+bx \
+bx [
+xZ
+xY
+bx X
+bx W
+bx V
+bx U
+bx T
+xS
+xR
+bx Q
+bx P
+0O
+0N
+b0 M
+b0 L
+b0 K
+0J
+bx I
+bx H
+bx G
+bx F
+b0 5
+x4
+x3
+bx 2
+bx 1
+b0 0
+b0 /
+0.
+1-
+0,
+0+
+0*
+x)
+x(
+0'
+b1001 &
+z%
+bz $
+z#
+z"
+z!
+$end
+#5
+0)
+b111 ^
+0(
+0S
+b0 X
+b0 ]
+b0 I
+b0 G
+b0 Q
+0Z
+b0 U
+b0 T
+b0 [
+b0 V
+0R
+b0 \
+b0 W
+b0 H
+b0 F
+0Y
+03
+04
+b0 P
+1'
+#10
+0'
+#15
+1'
+#20
+1+
+1)
+1*
+1,
+b1000 5
+b1111 0
+b1000001000 /
+1.
+0-
+0'
+#25
+b1111 2
+1'
+#30
+0+
+0)
+0*
+b0 _
+b1000 /
+0'
+#35
+b1111 `
+b111 _
+1)
+b0 ^
+1'
+#40
+0'
+#45
+b0 `
+b0 _
+0)
+b111 ^
+1'
+#50
+0'

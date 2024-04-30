@@ -1,0 +1,894 @@
+$date
+	Mon Apr 29 17:24:56 2024
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module dmaEx2 $end
+$scope module dma $end
+$var wire 1 ! bus_busy_in $end
+$var wire 1 " bus_error $end
+$var wire 1 # bus_grants $end
+$var wire 32 $ bus_in [31:0] $end
+$var wire 1 % bus_valid $end
+$var wire 8 & ciN [7:0] $end
+$var wire 1 ' clock $end
+$var wire 1 ( dma_write_ram $end
+$var wire 1 ) done $end
+$var wire 1 * enable_a $end
+$var wire 1 + enable_a_write_ram $end
+$var wire 1 , module_en $end
+$var wire 1 - reset $end
+$var wire 1 . start $end
+$var wire 32 / valueA [31:0] $end
+$var wire 32 0 valueB [31:0] $end
+$var wire 32 1 read_b [31:0] $end
+$var wire 32 2 read_a [31:0] $end
+$var wire 1 3 dma_status $end
+$var wire 1 4 bus_request $end
+$var wire 9 5 address_a [8:0] $end
+$var parameter 3 6 BLOCK_SIZE $end
+$var parameter 3 7 BURST_SIZE $end
+$var parameter 3 8 BUS_START_ADDR $end
+$var parameter 3 9 DMA_END_OP $end
+$var parameter 3 : DMA_END_TR $end
+$var parameter 3 ; DMA_IDLE $end
+$var parameter 3 < DMA_REQUEST $end
+$var parameter 3 = DMA_SETUP $end
+$var parameter 3 > DMA_TRANSFER $end
+$var parameter 3 ? IDLE $end
+$var parameter 3 @ MEMORY_LOCATION $end
+$var parameter 3 A MEM_START_ADDR $end
+$var parameter 3 B STATUS_CONTROL $end
+$var parameter 1 C STATUS_ERR $end
+$var parameter 1 D STATUS_OK $end
+$var parameter 8 E customId $end
+$var reg 10 F block_rem_c [9:0] $end
+$var reg 10 G block_rem_n [9:0] $end
+$var reg 8 H burst_rem_c [7:0] $end
+$var reg 8 I burst_rem_n [7:0] $end
+$var reg 1 J bus_begin $end
+$var reg 8 K bus_burst_size [7:0] $end
+$var reg 4 L bus_byte_enable [3:0] $end
+$var reg 32 M bus_out [31:0] $end
+$var reg 1 N bus_read $end
+$var reg 1 O bus_terminated $end
+$var reg 3 P dma_current [2:0] $end
+$var reg 3 Q dma_next [2:0] $end
+$var reg 1 R dma_read_n_write_c $end
+$var reg 1 S dma_read_n_write_n $end
+$var reg 10 T r_block_size [9:0] $end
+$var reg 8 U r_burst_size [7:0] $end
+$var reg 32 V r_bus_start [31:0] $end
+$var reg 32 W r_bus_start_c [31:0] $end
+$var reg 32 X r_bus_start_n [31:0] $end
+$var reg 1 Y r_err_current $end
+$var reg 1 Z r_err_next $end
+$var reg 9 [ r_mem_start [8:0] $end
+$var reg 9 \ r_mem_start_c [8:0] $end
+$var reg 9 ] r_mem_start_n [8:0] $end
+$var reg 3 ^ read_current [2:0] $end
+$var reg 3 _ read_next [2:0] $end
+$var reg 32 ` result [31:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+b1001 E
+0D
+1C
+b101 B
+b10 A
+b0 @
+b111 ?
+b10 >
+b11 =
+b1 <
+b0 ;
+b100 :
+b101 9
+b1 8
+b100 7
+b11 6
+$end
+#0
+$dumpvars
+b0 `
+b111 _
+bx ^
+bx ]
+bx \
+bx [
+xZ
+xY
+bx X
+bx W
+bx V
+bx U
+bx T
+xS
+xR
+bx Q
+bx P
+0O
+0N
+b0 M
+b0 L
+b0 K
+0J
+bx I
+bx H
+bx G
+bx F
+b0 5
+x4
+x3
+bx 2
+bx 1
+b0 0
+b0 /
+0.
+1-
+0,
+0+
+0*
+x)
+0(
+0'
+b1001 &
+0%
+b0 $
+0#
+0"
+z!
+$end
+#5
+0)
+b111 ^
+0S
+b0 X
+b0 ]
+b0 I
+b0 G
+b0 Q
+0Z
+b0 U
+b0 T
+b0 [
+b0 V
+0R
+b0 \
+b0 W
+b0 H
+b0 F
+0Y
+03
+04
+b0 P
+1'
+#10
+0'
+#15
+1'
+#20
+1+
+1)
+1*
+1,
+b1000 5
+b1111 0
+b1000001000 /
+1.
+0-
+0'
+#25
+b1111 2
+1'
+#30
+0+
+0)
+0*
+b0 _
+b1000 /
+0'
+#35
+b1111 `
+b111 _
+1)
+b0 ^
+1'
+#40
+0'
+#45
+b0 `
+b0 _
+0)
+b111 ^
+1'
+#50
+1)
+1*
+b111 _
+b0 5
+b1000 0
+b11000000000 /
+0'
+#55
+b1000 V
+bx 2
+1'
+#60
+0)
+0*
+b1 _
+b10000000000 /
+0'
+#65
+b1000 `
+b111 _
+1)
+b1 ^
+1'
+#70
+0'
+#75
+b0 `
+b1 _
+0)
+b111 ^
+1'
+#80
+1)
+1*
+b111 _
+b10000 0
+b101000000000 /
+0'
+#85
+b10000 [
+1'
+#90
+0)
+0*
+b10 _
+b100000000000 /
+0'
+#95
+b10000 `
+b111 _
+1)
+b10 ^
+1'
+#100
+0'
+#105
+b0 `
+b10 _
+0)
+b111 ^
+1'
+#110
+1)
+1*
+b111 _
+b101 0
+b111000000000 /
+0'
+#115
+b101 T
+1'
+#120
+0)
+0*
+b11 _
+b110000000000 /
+0'
+#125
+b101 `
+b111 _
+1)
+b11 ^
+1'
+#130
+0'
+#135
+b0 `
+b11 _
+0)
+b111 ^
+1'
+#140
+1)
+1*
+b111 _
+b1 0
+b1001000000000 /
+0'
+#145
+b1 U
+1'
+#150
+0)
+0*
+b100 _
+b1000000000000 /
+0'
+#155
+b1 `
+b111 _
+1)
+b100 ^
+1'
+#160
+0'
+#165
+b0 `
+b100 _
+0)
+b111 ^
+1'
+#170
+1)
+1*
+1S
+b1000 X
+b10000 ]
+b10 I
+b101 G
+b1 Q
+b111 _
+b1011000000000 /
+0'
+#175
+1R
+b10000 \
+b1000 W
+b10 H
+b101 F
+13
+14
+b1 P
+1'
+#180
+0)
+0*
+b101 _
+b1010000000000 /
+0'
+#185
+b1 `
+b111 _
+1)
+b101 ^
+1'
+#190
+0'
+#195
+b0 `
+b101 _
+0)
+b111 ^
+1'
+#200
+0'
+#205
+b1 `
+b111 _
+1)
+b101 ^
+1'
+#210
+0'
+#215
+b0 `
+b101 _
+0)
+b111 ^
+1'
+#220
+0'
+#225
+b1 `
+b111 _
+1)
+b101 ^
+1'
+#230
+b11 Q
+1#
+0'
+#235
+b0 `
+b101 _
+0)
+b111 ^
+b1000 M
+b1 K
+1J
+b1111 L
+1N
+b10 Q
+04
+b11 P
+1'
+#240
+0'
+#245
+b1 `
+b111 _
+1)
+b101 ^
+b0 K
+0J
+b0 L
+0N
+b0 M
+b10 P
+1'
+#250
+0'
+#255
+b0 `
+b101 _
+0)
+b111 ^
+1'
+#260
+0'
+#265
+b1 `
+b111 _
+1)
+b101 ^
+1'
+#270
+0'
+#275
+b0 `
+b101 _
+0)
+b111 ^
+1(
+b10001 ]
+b1100 X
+b1 I
+b100 G
+b1111111111111111 $
+1%
+1'
+#280
+b1111111111111111 1
+0'
+#285
+b1 `
+b111 _
+1)
+b101 ^
+b100 Q
+b10010 ]
+b10000 X
+b10 I
+b11 G
+b10001 \
+b1100 W
+b1 H
+b100 F
+1'
+#290
+0'
+#295
+b0 `
+b101 _
+0)
+b111 ^
+0(
+1O
+b1 Q
+b10010 \
+b10000 W
+b10 H
+b11 F
+b100 P
+1'
+#300
+bx 1
+0'
+#305
+b1 `
+b111 _
+1)
+b101 ^
+0O
+b11 Q
+14
+b1 P
+1'
+#310
+0'
+#315
+b0 `
+b101 _
+0)
+b111 ^
+b10000 M
+b1 K
+1J
+b1111 L
+1N
+b10 Q
+04
+b11 P
+1'
+#320
+0'
+#325
+b1 `
+b111 _
+1)
+b101 ^
+1(
+b0 K
+0J
+b0 L
+0N
+b0 M
+b10011 ]
+b10100 X
+b1 I
+b10 G
+b10 P
+1'
+#330
+b1111111111111111 1
+0'
+#335
+b0 `
+b101 _
+0)
+b111 ^
+b100 Q
+b10100 ]
+b11000 X
+b10 I
+b1 G
+b10011 \
+b10100 W
+b1 H
+b10 F
+1'
+#340
+0'
+#345
+b1 `
+b111 _
+1)
+b101 ^
+0(
+1O
+b1 Q
+b10100 \
+b11000 W
+b10 H
+b1 F
+b100 P
+1'
+#350
+bx 1
+0'
+#355
+b0 `
+b101 _
+0)
+b111 ^
+0O
+b11 Q
+14
+b1 P
+1'
+#360
+0'
+#365
+b1 `
+b111 _
+1)
+b101 ^
+b11000 M
+b1 K
+1J
+b1111 L
+1N
+b10 Q
+04
+b11 P
+1'
+#370
+0'
+#375
+b0 `
+b101 _
+0)
+b111 ^
+1(
+b0 K
+0J
+b0 L
+0N
+b0 M
+b101 Q
+b10101 ]
+b11100 X
+b1 I
+b0 G
+b10 P
+1'
+#380
+b1111111111111111 1
+0'
+#385
+b1 `
+b111 _
+1)
+b101 ^
+0(
+1O
+b0 Q
+b10101 \
+b11100 W
+b1 H
+b0 F
+b101 P
+1'
+#390
+bx 1
+0'
+#395
+b0 `
+b101 _
+0)
+b111 ^
+0O
+03
+b0 P
+1'
+#400
+0'
+#405
+b111 _
+1)
+b101 ^
+1'
+#410
+0'
+#415
+b101 _
+0)
+b111 ^
+1'
+#420
+0'
+#425
+b111 _
+1)
+b101 ^
+1'
+#430
+0'
+#435
+b101 _
+0)
+b111 ^
+1'
+#440
+0'
+#445
+b111 _
+1)
+b101 ^
+1'
+#450
+0'
+#455
+b101 _
+0)
+b111 ^
+1'
+#460
+0'
+#465
+b111 _
+1)
+b101 ^
+1'
+#470
+0'
+#475
+b101 _
+0)
+b111 ^
+1'
+#480
+0'
+#485
+b111 _
+1)
+b101 ^
+1'
+#490
+b10000 5
+b10000 /
+0'
+#495
+b0 _
+0)
+b111 ^
+b1111111111111111 2
+1'
+#500
+0'
+#505
+b1111111111111111 `
+b111 _
+1)
+b0 ^
+1'
+#510
+b10001 5
+b10001 /
+0'
+#515
+b0 `
+b0 _
+0)
+b111 ^
+1'
+#520
+0'
+#525
+b1111111111111111 `
+b111 _
+1)
+b0 ^
+1'
+#530
+b10010 5
+b10010 /
+0'
+#535
+b0 `
+b0 _
+0)
+b111 ^
+1'
+#540
+0'
+#545
+b1111111111111111 `
+b111 _
+1)
+b0 ^
+1'
+#550
+b10011 5
+b10011 /
+0'
+#555
+b0 `
+b0 _
+0)
+b111 ^
+1'
+#560
+0'
+#565
+b1111111111111111 `
+b111 _
+1)
+b0 ^
+1'
+#570
+b10100 5
+b10100 /
+0'
+#575
+b0 `
+b0 _
+0)
+b111 ^
+1'
+#580
+0'
+#585
+b1111111111111111 `
+b111 _
+1)
+b0 ^
+1'
+#590
+b10101 5
+b10101 /
+0'
+#595
+b0 _
+0)
+b111 ^
+b0 `
+bx 2
+1'
+#600
+0'
+#605
+bx `
+b111 _
+1)
+b0 ^
+1'
+#610
+0'
+#615
+b0 `
+b0 _
+0)
+b111 ^
+1'
+#620
+0'
+#625
+bx `
+b111 _
+1)
+b0 ^
+1'
+#630
+0'
+#635
+b0 `
+b0 _
+0)
+b111 ^
+1'
+#640
+0'
+#645
+bx `
+b111 _
+1)
+b0 ^
+1'
+#650
+0'
+#655
+b0 `
+b0 _
+0)
+b111 ^
+1'
+#660
+0'
+#665
+bx `
+b111 _
+1)
+b0 ^
+1'
+#670
+0'
+#675
+b0 `
+b0 _
+0)
+b111 ^
+1'
+#680
+0'
+#685
+bx `
+b111 _
+1)
+b0 ^
+1'
+#690
+0'
