@@ -5,6 +5,42 @@
 
 #define __WITH_CI
 
+void polling() {
+  int res = 1;
+  while(res == 1) {
+    asm volatile ("l.nios_rrr %[out1],%[in1],r0,0x14":[out1]"=r"(res):[in1]"r"(0b1010 << 9));
+  }
+}
+
+void set_bus_start(uint32_t* start) {
+  uint32_t addr = (uint32_t) start;
+  asm volatile ("l.nios_rrr r0,%[in1],%[in2],0x14"::[in1]"r"(0b0011 << 9),[in2]"r"(addr));
+}
+
+void set_mem_start(uint32_t start) {
+  asm volatile ("l.nios_rrr r0,%[in1],%[in2],0x14"::[in1]"r"(0b0101 << 9),[in2]"r"(start));
+}
+
+void start_read() {
+  asm volatile ("l.nios_rrr r0,%[in1],%[in2],0x14"::[in1]"r"(0b1010 << 9),[in2]"r"(0b1));
+}
+
+void start_write() {
+  asm volatile ("l.nios_rrr r0,%[in1],%[in2],0x14"::[in1]"r"(0b1011 << 9),[in2]"r"(0b10));
+}
+
+uint32_t read(uint32_t addr) {
+  uint32_t result = 0;
+        asm volatile ("l.nios_rrr %[out1],%[in1],r0,0x14":[out1]"=r"(result):[in1]"r"(addr));
+  return result;
+}
+
+void write(uint32_t addr, uint32_t value) {
+  addr = (1 << 9) | addr
+  asm volatile ("l.nios_rrr r0,%[in1],r0,0x14"::[in1]"r"(addr));
+}
+
+
 int main () {
   const uint8_t sevenSeg[10] = {0x3F,0x06,0x5B,0x4F,0x66,0x6D,0x7D,0x07,0x7F,0x6F};
   volatile uint16_t rgb565[640*480];
@@ -29,6 +65,8 @@ int main () {
   uint32_t grayPixels;
   vga[2] = swap_u32(2);
   vga[3] = swap_u32((uint32_t) &grayscale[0]);
+
+
   while(1) {
     takeSingleImageBlocking((uint32_t) &rgb565[0]);
     asm volatile ("l.nios_rrr r0,r0,%[in2],0xC"::[in2]"r"(7));
@@ -37,32 +75,67 @@ int main () {
     uint32_t tens = (dipswitch%100)/10;
     uint32_t ones = dipswitch%10;
     gpio[0] = swap_u32((sevenSeg[hunderds] << 16) | (sevenSeg[tens] << 8) | sevenSeg[ones]);
-#ifdef __WITH_CI
-      uint32_t * rgb = (uint32_t *) &rgb565[0];
-      uint32_t * gray = (uint32_t *) &grayscale[0];
-      for (int pixel = 0; pixel < ((camParams.nrOfLinesPerImage*camParams.nrOfPixelsPerLine) >> 1); pixel +=2) {
-        uint32_t pixel1 = rgb[pixel];
-        uint32_t pixel2 = rgb[pixel+1];
+
+    //compute pixels
+    uint32_t * rgb = (uint32_t *) &rgb565[0];
+    uint32_t * gray = (uint32_t *) &grayscale[0];
+    int current_buffer = 0;
+
+    /* for (int pixel = 0; pixel < ((camParams.nrOfLinesPerImage*camParams.nrOfPixelsPerLine) >> 1); pixel +=2) {
+      uint32_t pixel1 = rgb[pixel];
+      uint32_t pixel2 = rgb[pixel+1];
+      asm volatile ("l.nios_rrr %[out1],%[in1],%[in2],0x9":[out1]"=r"(grayPixels):[in1]"r"(pixel1),[in2]"r"(pixel2));
+      gray[0] = grayPixels  ;
+      gray++;
+    } */
+
+
+    //Step 1: transfer 512 pixels to first buffer
+    asm volatile ("l.nios_rrr r0,%[in1],%[in2],0x14"::[in1]"r"(0b0111 << 9),[in2]"r"(256));
+    asm volatile ("l.nios_rrr r0,%[in1],%[in2],0x14"::[in1]"r"(0b1001 << 9),[in2]"r"(256));
+    set_bus_start(rgb)
+    set_mem_start(current_buffer);
+    start_read();
+    polling();
+    //Step 2: transfer next 512 pixels to second buffer and calculate grayscale of the pixels in first buffer.
+    // Then check DMA transfer to buffer 2 is done. Then transfer the results of buffer 1 into grayscale screen buffer with DMA
+    // Repeat this for 599 iterations. Get pixel in one buffer while calculating previous pixels in the other, alternate
+    for(int i = 0; i < 600; i++) {
+      uint32_t start_addr = current_buffer;
+      if(i != 599) {
+        //Transfer to second buffer
+        asm volatile ("l.nios_rrr r0,%[in1],%[in2],0x14"::[in1]"r"(0b0111 << 9),[in2]"r"(256));
+        asm volatile ("l.nios_rrr r0,%[in1],%[in2],0x14"::[in1]"r"(0b1001 << 9),[in2]"r"(256));
+        current_buffer = (current_buffer == 0) ? 256 : 0;
+        set_mem_start(current_buffer);
+        rgb += 256;
+        set_bus_start(rgb);
+        start_read();
+      }
+
+      //Grayscale computation
+      for(int j = 0; j < 256; j+=2) {
+        uint32_t pixel1 = read(4*(start_addr + j));
+        uint32_t pixel2 = read(4*(start_addr + j + 1))
+        uint32_t grayPixels = 0;
         asm volatile ("l.nios_rrr %[out1],%[in1],%[in2],0x9":[out1]"=r"(grayPixels):[in1]"r"(pixel1),[in2]"r"(pixel2));
-        uint32_t newGrayPixel = (grayPixels&0xFF) > dipswitch ? 0xFF : 0x00;
-        newGrayPixel |= ((grayPixels >> 8)&0xFF) > dipswitch ? 0xFF00 : 0;
-        newGrayPixel |= ((grayPixels >> 16)&0xFF) > dipswitch ? 0xFF0000 : 0;
-        newGrayPixel |= ((grayPixels >> 24)&0xFF) > dipswitch ? 0xFF000000 : 0;
-        gray[0] = newGrayPixel;
-        gray++;
+        write(4*(start_addr + j), grayPixels)
       }
-#else
-    for (int line = 0; line < camParams.nrOfLinesPerImage; line++) {
-      for (int pixel = 0; pixel < camParams.nrOfPixelsPerLine; pixel++) {
-        uint16_t rgb = swap_u16(rgb565[line*camParams.nrOfPixelsPerLine+pixel]);
-        uint32_t red1 = ((rgb >> 11) & 0x1F) << 3;
-        uint32_t green1 = ((rgb >> 5) & 0x3F) << 2;
-        uint32_t blue1 = (rgb & 0x1F) << 3;
-        uint32_t gray = ((red1*54+green1*183+blue1*19) >> 8)&0xFF;
-        grayscale[line*camParams.nrOfPixelsPerLine+pixel] = gray;
-      }
+
+      //check other transfer finished
+      polling();
+
+      //Transfer from dma to gray buffer
+      asm volatile ("l.nios_rrr r0,%[in1],%[in2],0x14"::[in1]"r"(0b0111 << 9),[in2]"r"(128));
+      asm volatile ("l.nios_rrr r0,%[in1],%[in2],0x14"::[in1]"r"(0b1001 << 9),[in2]"r"(128));
+      set_mem_start(start_addr);
+      set_bus_start(gray);
+      gray += 128;
+      start_write();
+      polling();
     }
-#endif
+
+    //Profling
     asm volatile ("l.nios_rrr %[out1],r0,%[in2],0xC":[out1]"=r"(cycles):[in2]"r"(1<<8|7<<4));
     asm volatile ("l.nios_rrr %[out1],%[in1],%[in2],0xC":[out1]"=r"(stall):[in1]"r"(1),[in2]"r"(1<<9));
     asm volatile ("l.nios_rrr %[out1],%[in1],%[in2],0xC":[out1]"=r"(idle):[in1]"r"(2),[in2]"r"(1<<10));
