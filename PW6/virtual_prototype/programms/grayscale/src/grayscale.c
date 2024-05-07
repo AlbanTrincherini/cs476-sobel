@@ -40,14 +40,12 @@ void write(uint32_t addr, uint32_t value) {
   asm volatile ("l.nios_rrr r0,%[in1],%[in2],0x14"::[in1]"r"(addr),[in2]"r"(value));
 }
 
-
 int main () {
-  const uint8_t sevenSeg[10] = {0x3F,0x06,0x5B,0x4F,0x66,0x6D,0x7D,0x07,0x7F,0x6F};
   volatile uint16_t rgb565[640*480];
   volatile uint8_t grayscale[640*480];
   volatile uint32_t result, cycles,stall,idle;
+  volatile uint32_t current_buffer = 0;
   volatile unsigned int *vga = (unsigned int *) 0X50000020;
-  volatile unsigned int *gpio = (unsigned int *) 0x40000000;
   camParameters camParams;
   vga_clear();
   
@@ -64,35 +62,21 @@ int main () {
   printf("FPS        : %d\n", camParams.framesPerSecond );
   uint32_t grayPixels;
   vga[2] = swap_u32(2);
-
   vga[3] = swap_u32((uint32_t) &grayscale[0]);
-
-
   while(1) {
-
     takeSingleImageBlocking((uint32_t) &rgb565[0]);
-
     asm volatile ("l.nios_rrr r0,r0,%[in2],0xC"::[in2]"r"(7));
-    uint32_t dipswitch = swap_u32(gpio[0])^0xFF;
-    uint32_t hunderds = dipswitch/100;
-    uint32_t tens = (dipswitch%100)/10;
-    uint32_t ones = dipswitch%10;
-    gpio[0] = swap_u32((sevenSeg[hunderds] << 16) | (sevenSeg[tens] << 8) | sevenSeg[ones]);
 
-    //compute pixels
-    uint32_t * rgb = (uint32_t *) &rgb565[0];
-    uint32_t * gray = (uint32_t *) &grayscale[0];
-    int current_buffer = 0;
+      uint32_t * rgb = (uint32_t *) &rgb565[0];
+      uint32_t * gray = (uint32_t *) &grayscale[0];
+      /*for (int pixel = 0; pixel < ((camParams.nrOfLinesPerImage*camParams.nrOfPixelsPerLine) >> 1); pixel +=2) {
+        uint32_t pixel1 = rgb[pixel];
+        uint32_t pixel2 = rgb[pixel+1];
+        asm volatile ("l.nios_rrr %[out1],%[in1],%[in2],0x9":[out1]"=r"(grayPixels):[in1]"r"(pixel1),[in2]"r"(pixel2));
+        gray[0] = grayPixels;
+        gray++;
+      }*/
 
-  /*   for (int pixel = 0; pixel < ((camParams.nrOfLinesPerImage*camParams.nrOfPixelsPerLine) >> 1); pixel +=2) {
-      uint32_t pixel1 = rgb[pixel];
-      uint32_t pixel2 = rgb[pixel+1];
-      asm volatile ("l.nios_rrr %[out1],%[in1],%[in2],0x9":[out1]"=r"(grayPixels):[in1]"r"(pixel1),[in2]"r"(pixel2));
-      gray[0] = grayPixels;
-      gray++;
-    }  */
-   
-    //Step 1: transfer 512 pixels to first buffer
     asm volatile ("l.nios_rrr r0,%[in1],%[in2],0x14"::[in1]"r"(0b0111 << 9),[in2]"r"(256));
     asm volatile ("l.nios_rrr r0,%[in1],%[in2],0x14"::[in1]"r"(0b1001 << 9),[in2]"r"(31));
     set_bus_start(rgb);
@@ -143,6 +127,6 @@ int main () {
     asm volatile ("l.nios_rrr %[out1],r0,%[in2],0xC":[out1]"=r"(cycles):[in2]"r"(1<<8|7<<4));
     asm volatile ("l.nios_rrr %[out1],%[in1],%[in2],0xC":[out1]"=r"(stall):[in1]"r"(1),[in2]"r"(1<<9));
     asm volatile ("l.nios_rrr %[out1],%[in1],%[in2],0xC":[out1]"=r"(idle):[in1]"r"(2),[in2]"r"(1<<10));
-    //printf("nrOfCycles: %d %d %d\n", cycles, stall, idle);
+    printf("nrOfCycles: %d %d %d\n", cycles, stall, idle);
   }
 }
