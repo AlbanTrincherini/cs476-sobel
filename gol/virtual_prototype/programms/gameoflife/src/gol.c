@@ -67,7 +67,7 @@ int main() {
   printf("PCLK (kHz) : %d\n", camParams.pixelClockInkHz );
   printf("FPS        : %d\n", camParams.framesPerSecond );
   uint32_t grayPixels;
-  vga[2] = swap_u32(2);
+  vga[2] = swap_u32(1); // 1 for rgb, 2 for grayscale (changes bit length too)
   vga[3] = swap_u32((uint32_t) &frameBuffer[0]);
 
   // INIT
