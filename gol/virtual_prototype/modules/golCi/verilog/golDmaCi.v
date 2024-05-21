@@ -24,7 +24,7 @@ module ramDmaCi #( parameter [7:0] customId = 8'h00 )
                    output reg [7:0]   burstSizeOut,
                    output wire [31:0] addressDataOut);
 
-  wire [31:0] s_sramDataValue;
+  wire s_sramDataValue;
   /*
    *
    * Here we define the custom instruction control signals
@@ -46,7 +46,7 @@ module ramDmaCi #( parameter [7:0] customId = 8'h00 )
    */
   reg[31:0] s_busStartAddressReg;
   reg[8:0]  s_memoryStartAddressReg;
-  reg[10:0]  s_blockSizeReg;
+  reg[17:0]  s_blockSizeReg;
   reg[7:0]  s_usedBurstSizeReg;
   
   always @(posedge clock)
@@ -55,8 +55,8 @@ module ramDmaCi #( parameter [7:0] customId = 8'h00 )
                                  (s_isMyCi == 1'b1 && valueA[12:9] == 4'b0011) ? valueB : s_busStartAddressReg;
       s_memoryStartAddressReg <= (reset == 1'b1) ? 9'd0 :
                                  (s_isMyCi == 1'b1 && valueA[12:9] == 4'b0101) ? valueB[8:0] : s_memoryStartAddressReg;
-      s_blockSizeReg          <= (reset == 1'b1) ? 11'd0 :
-                                 (s_isMyCi == 1'b1 && valueA[12:9] == 4'b0111) ? valueB[10:0] : s_blockSizeReg;
+      s_blockSizeReg          <= (reset == 1'b1) ? 18'd0 :
+                                 (s_isMyCi == 1'b1 && valueA[12:9] == 4'b0111) ? valueB[17:0] : s_blockSizeReg;
       s_usedBurstSizeReg      <= (reset == 1'b1) ? 8'd0 :
                                  (s_isMyCi == 1'b1 && valueA[12:9] == 4'b1001) ? valueB[7:0] : s_usedBurstSizeReg;
     end
@@ -84,9 +84,10 @@ module ramDmaCi #( parameter [7:0] customId = 8'h00 )
   
   reg [11:0] s_ramCiAddressReg;
   wire s_ramCiWriteEnable;
-  wire [31:0] s_busRamData;
+  wire [31:0] s_busRamData = s_readData ? 32'hee6bee6b : 32'b0;
+  wire s_readData;
   
-  dualPortSSRAM #( .bitwidth(8),
+  dualPortSSRAM #( .bitwidth(1),
                    .nrOfEntries(2400)) memory
                  ( .clockA(clock), 
                    .clockB(~clock),
@@ -94,10 +95,10 @@ module ramDmaCi #( parameter [7:0] customId = 8'h00 )
                    .writeEnableB(s_ramCiWriteEnable),
                    .addressA(valueA[11:0]), 
                    .addressB(s_ramCiAddressReg),
-                   .dataInA(valueB), 
+                   .dataInA(valueB[0]), 
                    .dataInB(s_addressDataInReg),
                    .dataOutA(s_sramDataValue), 
-                   .dataOutB(s_busRamData));
+                   .dataOutB(s_readData));
   
 
   /*
@@ -157,13 +158,13 @@ module ramDmaCi #( parameter [7:0] customId = 8'h00 )
    *
    */
   reg[31:0] s_busStartAddressShadowReg;
-  reg[10:0]  s_blockSizeShadowReg;
+  reg[17:0]  s_blockSizeShadowReg;
   wire s_doBusWrite = (s_dmaCurrentStateReg == DO_WRITE) ? ~busyIn & ~s_wordsWrittenReg[8] : 1'b0;
 
   
   /* the second condition is the special case where the end of transaction collides with the last data valid in */
-  assign s_dmaDone = (s_blockSizeShadowReg == 11'd0 ||
-                      (s_blockSizeShadowReg == 11'd1 && s_endTransactionInReg == 1'b1 && s_dataValidInReg == 1'b1)) ? 1'b1 : 1'b0;
+  assign s_dmaDone = (s_blockSizeShadowReg == 18'd0 ||
+                      (s_blockSizeShadowReg == 18'd1 && s_endTransactionInReg == 1'b1 && s_dataValidInReg == 1'b1)) ? 1'b1 : 1'b0;
   assign s_ramCiWriteEnable = (s_dmaCurrentStateReg == DO_READ) ? s_dataValidInReg : 1'b0;
   
   always @(posedge clock)
@@ -171,7 +172,7 @@ module ramDmaCi #( parameter [7:0] customId = 8'h00 )
       s_busStartAddressShadowReg <= (s_dmaCurrentStateReg == INIT) ? s_busStartAddressReg :
                                     (s_ramCiWriteEnable == 1'b1 || s_doBusWrite == 1'b1) ? s_busStartAddressShadowReg + 32'd4 : s_busStartAddressShadowReg;
       s_blockSizeShadowReg       <= (s_dmaCurrentStateReg == INIT) ? s_blockSizeReg :
-                                    (s_ramCiWriteEnable == 1'b1 || s_doBusWrite == 1'b1) ? s_blockSizeShadowReg - 11'd1 : s_blockSizeShadowReg;
+                                    (s_ramCiWriteEnable == 1'b1 || s_doBusWrite == 1'b1) ? s_blockSizeShadowReg - 18'd1 : s_blockSizeShadowReg;
       s_ramCiAddressReg          <= (s_dmaCurrentStateReg == INIT) ? s_memoryStartAddressReg :
                                     (s_ramCiWriteEnable == 1'b1 || s_doBusWrite == 1'b1) ? s_ramCiAddressReg + 12'd1 : s_ramCiAddressReg;
     end
@@ -184,7 +185,7 @@ module ramDmaCi #( parameter [7:0] customId = 8'h00 )
   reg        s_dataOutValidReg;
   reg [31:0] s_addressDataOutReg;
   wire [9:0] s_maxBurstSize = {2'd0,s_usedBurstSizeReg} + 10'd1;
-  wire [9:0] s_restingBlockSize = s_blockSizeShadowReg - 11'd1;
+  wire [17:0] s_restingBlockSize = s_blockSizeShadowReg - 18'd1;
   wire [7:0] s_usedBurstSize = (s_blockSizeShadowReg > s_maxBurstSize) ? s_usedBurstSizeReg : s_restingBlockSize[7:0];
   
   assign requestTransaction = (s_dmaCurrentStateReg == REQUEST_BUS) ? 1'd1 : 1'd0;
@@ -215,7 +216,7 @@ module ramDmaCi #( parameter [7:0] customId = 8'h00 )
   
   always @*
     case (valueA[12:10])
-      3'b000    : s_result <= s_sramDataValue;
+      3'b000    : s_result <= {31'b0, s_sramDataValue};
       3'b001    : s_result <= s_busStartAddressReg;
       3'b010    : s_result <= {23'd0,s_memoryStartAddressReg};
       3'b011    : s_result <= {21'd0,s_blockSizeReg};
