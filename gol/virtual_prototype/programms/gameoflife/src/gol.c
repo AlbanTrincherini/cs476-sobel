@@ -5,19 +5,18 @@
 
 volatile uint32_t memBuffer[512];
 
-enum { WIDTH = 20, HEIGHT = 15 };
+enum { WIDTH = 40, HEIGHT = 30};
+enum { SEED_W = 20, SEED_H = 15};
 
-int const CELLSIDE = 32;
-// int const WIDTH = 20;
-// int const HEIGHT = 15;
-static int seed[HEIGHT][WIDTH] = {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
+int const CELLSIDE = 16;
+static uint8_t seed[SEED_H][SEED_W] = {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
                               {0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
-                              {0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
+                              {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
                               {0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
                               {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
                               {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
                               {0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
-                              {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
+                              {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
                               {0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
                               {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
                               {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
@@ -45,8 +44,8 @@ int fateOfTheCell(int cell, int liveNeighbors) {
 
 int main() {
   
-  int array[HEIGHT][WIDTH];
-  int nextArray[HEIGHT][WIDTH];
+  uint8_t array[HEIGHT][WIDTH];
+  uint8_t nextArray[HEIGHT][WIDTH];
   uint16_t frameBuffer[640*480];
   
 
@@ -73,7 +72,9 @@ int main() {
   // INIT
   for (int i = 0 ; i < HEIGHT ; i++) {
     for (int j = 0 ; j < WIDTH ; j++) {
-      array[i][j] = seed[i][j];
+      if (i < SEED_H && j < SEED_W) {
+        array[i][j] = seed[i][j];
+      } else {array[i][j] = 0;}
       nextArray[i][j] = 0;
     }
   }
@@ -94,7 +95,11 @@ int main() {
     for (int x = 0 ; x < HEIGHT ; x++) {
       for (int y = 0 ; y < WIDTH ; y++) {
         int theCell = array[x][y];
-        int liveNeighbors = array[x-1][y-1] + array[x-1][y] + array[x-1][y+1] + array[x][y-1] + array[x][y+1] + array[x+1][y-1] + array[x+1][y] + array[x+1][y+1];
+        int xMinus1 = (x-1 + HEIGHT) % HEIGHT;
+        int xPlus1 = (x+1) % HEIGHT;
+        int yMinus1 = (y-1 + WIDTH) % WIDTH;
+        int yPlus1 = (y+1) % WIDTH;
+        int liveNeighbors = array[xMinus1][yMinus1] + array[xMinus1][y] + array[xMinus1][yPlus1] + array[x][yMinus1] + array[x][yPlus1] + array[xPlus1][yMinus1] + array[xPlus1][y] + array[xPlus1][yPlus1];
         nextArray[x][y] = fateOfTheCell(theCell, liveNeighbors);
       }
     }
