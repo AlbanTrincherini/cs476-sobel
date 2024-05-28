@@ -96,6 +96,12 @@ uint32_t toAddr(int x, int y) {
   return res;
 }
 
+uint32_t getRng() {
+  uint32_t res;
+  asm volatile ("l.nios_rrr %[out1],r0,r0,0xFA":[out1]"=r"(res):);
+  return res;
+} 
+
 int main() {
   uint16_t frameBuffer[640*480];
   volatile uint32_t current_buffer = 0;
@@ -144,6 +150,8 @@ int main() {
 
   // Init profiling counters
   asm volatile ("l.nios_rrr r0,r0,%[in2],0xC"::[in2]"r"(7));
+
+  int test = 1;
 
   // GAME
   while(1) {
@@ -225,6 +233,14 @@ int main() {
 
     current_buffer = current_buffer == 0 ? SIZE : 0;
 
+    if (test) {
+      for (int i = 0 ; i < HEIGHT ; i++) {
+        for (int j = 0 ; j < WIDTH ; j++) {
+          write(current_buffer + toAddr(i, j), getRng() & 1);
+        }
+      }
+      test = 0;
+    }
   } 
 
   return 0;
