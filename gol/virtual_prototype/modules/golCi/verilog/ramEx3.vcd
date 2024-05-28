@@ -1,0 +1,552 @@
+$date
+	Tue May 28 13:53:01 2024
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module dmaEx3 $end
+$scope module dma $end
+$var wire 32 ! addressDataIn [31:0] $end
+$var wire 32 " addressDataOut [31:0] $end
+$var wire 1 # busErrorIn $end
+$var wire 1 $ busyIn $end
+$var wire 8 % ciN [7:0] $end
+$var wire 1 & clock $end
+$var wire 1 ' dataValidIn $end
+$var wire 1 ( dataValidOut $end
+$var wire 1 ) done $end
+$var wire 1 * endTransactionIn $end
+$var wire 1 + reset $end
+$var wire 1 , s_isSramRead $end
+$var wire 1 - start $end
+$var wire 1 . transactionGranted $end
+$var wire 32 / valueA [31:0] $end
+$var wire 32 0 valueB [31:0] $end
+$var wire 12 1 y40 [11:0] $end
+$var wire 12 2 y [11:0] $end
+$var wire 12 3 x [11:0] $end
+$var wire 8 4 s_usedBurstSize [7:0] $end
+$var wire 1 5 s_sramDataValue $end
+$var wire 18 6 s_restingBlockSize [17:0] $end
+$var wire 1 7 s_requestDmaOut $end
+$var wire 1 8 s_requestDmaIn $end
+$var wire 1 9 s_readData $end
+$var wire 1 : s_ramCiWriteEnable $end
+$var wire 10 ; s_maxBurstSize [9:0] $end
+$var wire 1 < s_isSramWrite $end
+$var wire 1 = s_isMyCi $end
+$var wire 1 > s_doBusWrite $end
+$var wire 1 ? s_dmaIsBusy $end
+$var wire 1 @ s_dmaDone $end
+$var wire 32 A s_busRamData [31:0] $end
+$var wire 32 B result [31:0] $end
+$var wire 1 C requestTransaction $end
+$var wire 12 D cellIndex [11:0] $end
+$var parameter 4 E DO_READ $end
+$var parameter 4 F DO_WRITE $end
+$var parameter 4 G END_TRANSACTION_ERROR $end
+$var parameter 4 H END_WRITE_TRANSACTION $end
+$var parameter 4 I IDLE $end
+$var parameter 4 J INIT $end
+$var parameter 4 K REQUEST_BUS $end
+$var parameter 4 L SET_UP_TRANSACTION $end
+$var parameter 4 M WAIT_END $end
+$var parameter 12 N WIDTH $end
+$var parameter 8 O customId $end
+$var reg 1 P beginTransactionOut $end
+$var reg 8 Q burstSizeOut [7:0] $end
+$var reg 4 R byteEnablesOut [3:0] $end
+$var reg 1 S endTransactionOut $end
+$var reg 1 T readNotWriteOut $end
+$var reg 32 U s_addressDataInReg [31:0] $end
+$var reg 32 V s_addressDataOutReg [31:0] $end
+$var reg 18 W s_blockSizeReg [17:0] $end
+$var reg 18 X s_blockSizeShadowReg [17:0] $end
+$var reg 1 Y s_busErrorReg $end
+$var reg 32 Z s_busStartAddressReg [31:0] $end
+$var reg 32 [ s_busStartAddressShadowReg [31:0] $end
+$var reg 1 \ s_dataOutValidReg $end
+$var reg 1 ] s_dataValidInReg $end
+$var reg 4 ^ s_dmaCurrentStateReg [3:0] $end
+$var reg 4 _ s_dmaNextState [3:0] $end
+$var reg 1 ` s_endTransactionInReg $end
+$var reg 1 a s_isReadBurstReg $end
+$var reg 1 b s_isSramReadReg $end
+$var reg 9 c s_memoryStartAddressReg [8:0] $end
+$var reg 32 d s_result [31:0] $end
+$var reg 8 e s_usedBurstSizeReg [7:0] $end
+$var reg 9 f s_wordsWrittenReg [8:0] $end
+$var reg 12 g s_xAddressReg [11:0] $end
+$var reg 12 h s_yAddressReg [11:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+b1001 O
+b1010000000 N
+b101 M
+b11 L
+b10 K
+b1 J
+b0 I
+b1000 H
+b111 G
+b110 F
+b100 E
+$end
+#0
+$dumpvars
+bx h
+bx g
+bx f
+bx e
+b0x d
+bx c
+xb
+xa
+x`
+b0 _
+bx ^
+x]
+x\
+bx [
+bx Z
+xY
+bx X
+bx W
+bx V
+bx U
+xT
+xS
+bx R
+bx Q
+xP
+bx D
+xC
+b0x B
+bx0xxx00xx0x0xxxxx0xxx00xx0x0xx A
+x@
+x?
+x>
+0=
+0<
+bx ;
+x:
+x9
+08
+07
+bx 6
+x5
+bx 4
+b0xxxxxxxx 3
+b0xxxxxxxx 2
+bx 1
+b0 0
+b0 /
+0.
+0-
+0,
+1+
+z*
+x)
+x(
+0'
+0&
+b1001 %
+0$
+0#
+bx "
+b0 !
+$end
+#5
+0?
+0>
+0:
+0C
+b1 ;
+b0 e
+b0 W
+b0 c
+b0 Z
+b0 U
+0]
+z`
+0Y
+b0 ^
+b0 B
+0)
+0b
+1&
+#10
+0&
+#15
+0(
+0\
+0S
+b0 "
+b0 V
+b0 Q
+b0 R
+0T
+0P
+0a
+1&
+#20
+1,
+1=
+b1 0
+b1000000000 /
+1-
+0+
+0&
+#25
+b0x B
+1)
+1b
+1&
+#30
+b0 /
+0&
+#35
+1&
+#40
+0&
+#45
+1&
+#50
+b10 0
+b1000000001 /
+0&
+#55
+1&
+#60
+b1 /
+0&
+#65
+1&
+#70
+0&
+#75
+1&
+#80
+b11 0
+b1000000010 /
+0&
+#85
+1&
+#90
+b10 /
+0&
+#95
+1&
+#100
+0&
+#105
+1&
+#110
+b1000 0
+b11000000000 /
+0&
+#115
+1&
+#120
+b10000000000 /
+0&
+#125
+1&
+#130
+0&
+#135
+1&
+#140
+b0 0
+b101000000000 /
+0&
+#145
+1&
+#150
+b100000000000 /
+0&
+#155
+1&
+#160
+0&
+#165
+1&
+#170
+b11 0
+b111000000000 /
+0&
+#175
+1&
+#180
+b110000000000 /
+0&
+#185
+1&
+#190
+0&
+#195
+1&
+#200
+1<
+0,
+b0 0
+b1001000000000 /
+0&
+#205
+b0 d
+b0 B
+05
+0b
+1&
+#210
+b1000000000000 /
+0&
+#215
+1&
+#220
+0&
+#225
+1&
+#230
+b11 0
+b1011000000000 /
+0&
+#235
+b1 d
+15
+1&
+#240
+0&
+#245
+1&
+#250
+0&
+#255
+1&
+#260
+0&
+#265
+1&
+#270
+0&
+#275
+1&
+#280
+0&
+#285
+1&
+#290
+b10 0
+0&
+#295
+b0 d
+05
+1&
+#300
+b1010000000000 /
+0&
+#305
+1&
+#310
+0&
+#315
+1&
+#320
+0&
+#325
+1&
+#330
+0&
+#335
+1&
+#340
+0&
+#345
+1$
+1.
+1&
+#350
+0&
+#355
+1&
+#360
+0&
+#365
+1&
+#370
+0&
+#375
+1&
+#380
+0&
+#385
+1&
+#390
+0&
+#395
+0$
+1&
+#400
+0&
+#405
+1&
+#410
+0&
+#415
+1&
+#420
+0&
+#425
+1&
+#430
+0&
+#435
+1&
+#440
+0&
+#445
+1&
+#450
+0&
+#455
+1&
+#460
+0&
+#465
+1&
+#470
+0&
+#475
+1&
+#480
+0&
+#485
+1&
+#490
+0&
+#495
+1&
+#500
+0&
+#505
+1&
+#510
+0&
+#515
+1&
+#520
+0&
+#525
+1&
+#530
+0&
+#535
+1&
+#540
+0&
+#545
+1&
+#550
+0&
+#555
+1&
+#560
+0&
+#565
+1&
+#570
+0&
+#575
+1&
+#580
+0&
+#585
+1&
+#590
+0&
+#595
+1&
+#600
+0&
+#605
+1&
+#610
+0&
+#615
+1&
+#620
+0&
+#625
+1&
+#630
+0&
+#635
+1&
+#640
+0&
+#645
+1&
+#650
+0&
+#655
+1&
+#660
+0&
+#665
+1&
+#670
+0&
+#675
+1&
+#680
+0&
+#685
+1&
+#690
+0&
+#695
+1&
+#700
+0&
+#705
+1&
+#710
+0&
+#715
+1&
+#720
+0&
+#725
+1&
+#730
+0&
+#735
+1&
+#740
+0&
+#745
+1&
+#750
+0&
+#755
+1&
+#760
+0&
+#765
+1&
+#770
+0&
+#775
+1&
+#780
+0&
+#785
+1&
+#790
+0&

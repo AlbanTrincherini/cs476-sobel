@@ -12,7 +12,7 @@ enum { SEED_W = 40, SEED_H = 30};
 int const CELLSIDE = 16;
 static uint8_t seed[SEED_H][SEED_W] = 
                              {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
-                              {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
+                              {1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
                               {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
                               {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0}, 
                               {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0}, 
@@ -41,6 +41,7 @@ static uint8_t seed[SEED_H][SEED_W] =
                               {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
                               {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
                               {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+
 
 
 int fateOfTheCell(int cell, int liveNeighbors) {
@@ -96,9 +97,6 @@ uint32_t toAddr(int x, int y) {
 }
 
 int main() {
-  
-  uint8_t array[HEIGHT][WIDTH];
-  uint8_t nextArray[HEIGHT][WIDTH];
   uint16_t frameBuffer[640*480];
   volatile uint32_t current_buffer = 0;
 
@@ -137,7 +135,6 @@ int main() {
   for (int i = 0 ; i < HEIGHT ; i++) {
     for (int j = 0 ; j < WIDTH ; j++) {
       write(toAddr(i, j), seed[i][j]);
-      //printf("%d %d |", seed[i][j], read(toAddr(i,j)));
       write(SIZE + toAddr(i, j), 0);
       //array[i][j] = seed[i][j];
       //nextArray[i][j] = 0;
@@ -170,14 +167,14 @@ int main() {
 
     set_mem_start(current_buffer);
     start_write();
-break;
+
     uint32_t source = current_buffer;
     uint32_t dest = current_buffer == 0 ? SIZE : 0;
 
     // computing nextArray from array
     for (int x = 0 ; x < HEIGHT ; x++) {
       for (int y = 0 ; y < WIDTH ; y++) {
-        int theCell = array[x][y];
+        int theCell = read(source + toAddr(x, y));
         int xMinus1 = (x-1 + HEIGHT) % HEIGHT;
         int xPlus1 = (x+1) % HEIGHT;
         int yMinus1 = (y-1 + WIDTH) % WIDTH;
@@ -194,9 +191,6 @@ break;
         write(dest + toAddr(x, y), fate);
       }
     }
-
-    polling();
-
     //Profling
     asm volatile ("l.nios_rrr %[out1],r0,%[in2],0xC":[out1]"=r"(cycles):[in2]"r"(1<<8|7<<4));
     asm volatile ("l.nios_rrr %[out1],%[in1],%[in2],0xC":[out1]"=r"(stall):[in1]"r"(1),[in2]"r"(1<<9));
@@ -204,12 +198,21 @@ break;
     printf("compute next array: %d %d %d\n", cycles, stall, idle);
     asm volatile ("l.nios_rrr r0,r0,%[in2],0xC"::[in2]"r"(7));
 
-    // updating array
-    for (int i = 0 ; i < HEIGHT ; i++) {
-      for (int j = 0 ; j < WIDTH ; j++) {
-        array[i][j] = nextArray[i][j];
-      }
-    }
+    polling();
+
+    //Profling
+    asm volatile ("l.nios_rrr %[out1],r0,%[in2],0xC":[out1]"=r"(cycles):[in2]"r"(1<<8|7<<4));
+    asm volatile ("l.nios_rrr %[out1],%[in1],%[in2],0xC":[out1]"=r"(stall):[in1]"r"(1),[in2]"r"(1<<9));
+    asm volatile ("l.nios_rrr %[out1],%[in1],%[in2],0xC":[out1]"=r"(idle):[in1]"r"(2),[in2]"r"(1<<10));
+    printf("polling: %d %d %d\n", cycles, stall, idle);
+    asm volatile ("l.nios_rrr r0,r0,%[in2],0xC"::[in2]"r"(7));
+
+    // // updating array
+    // for (int i = 0 ; i < HEIGHT ; i++) {
+    //   for (int j = 0 ; j < WIDTH ; j++) {
+    //     array[i][j] = nextArray[i][j];
+    //   }
+    // }
 
     // //Profling
     // asm volatile ("l.nios_rrr %[out1],r0,%[in2],0xC":[out1]"=r"(cycles):[in2]"r"(1<<8|7<<4));
