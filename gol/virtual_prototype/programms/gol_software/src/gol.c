@@ -5,7 +5,9 @@
 
 enum { WIDTH = 40, HEIGHT = 30};
 enum { SEED_W = 40, SEED_H = 30};
-#define SIZE 1200
+#define SIZE (WIDTH * HEIGHT)
+
+#define PROFILING
 
 int const CELLSIDE = 16;
 static uint8_t seed[SEED_H][SEED_W] = 
@@ -43,21 +45,19 @@ static uint8_t seed[SEED_H][SEED_W] =
 
 
 int fateOfTheCell(int cell, int liveNeighbors) {
-  if (cell == 1) {
-    if (liveNeighbors == 2 || liveNeighbors == 3) {
-      return 1;
-    } else {return 0;}
-  } else {
-    if (liveNeighbors == 3) {
-      return 1;
-    } else {return 0;}
-  }
+  return cell == 1 
+    ? liveNeighbors == 2 || liveNeighbors == 3 //cell alive
+    : liveNeighbors == 3; //Cell dead
 }
 
 int main() {
   volatile uint8_t array[HEIGHT][WIDTH];
   volatile uint8_t nextArray[HEIGHT][WIDTH];
   volatile uint16_t frameBuffer[640*480];
+
+  #ifdef PROFILING
+  volatile uint32_t cycles,stall,idle;
+  #endif
 
   volatile int result;
   volatile unsigned int *vga = (unsigned int *) 0X50000020;
@@ -100,6 +100,15 @@ int main() {
         frameBuffer[line*camParams.nrOfPixelsPerLine+pixel] = value;
       }
     }
+    
+    //Profling
+    #ifdef PROFILING
+    asm volatile ("l.nios_rrr %[out1],r0,%[in2],0xC":[out1]"=r"(cycles):[in2]"r"(1<<8|7<<4));
+    asm volatile ("l.nios_rrr %[out1],%[in1],%[in2],0xC":[out1]"=r"(stall):[in1]"r"(1),[in2]"r"(1<<9));
+    asm volatile ("l.nios_rrr %[out1],%[in1],%[in2],0xC":[out1]"=r"(idle):[in1]"r"(2),[in2]"r"(1<<10));
+    printf("Write array to frameBuffer: %d %d %d\n", cycles, stall, idle);
+    asm volatile ("l.nios_rrr r0,r0,%[in2],0xC"::[in2]"r"(7));
+    #endif
 
     // computing nextArray from array
     for (int x = 0 ; x < HEIGHT ; x++) {
@@ -114,13 +123,31 @@ int main() {
       }
     }
 
+    //Profling
+    #ifdef PROFILING
+    asm volatile ("l.nios_rrr %[out1],r0,%[in2],0xC":[out1]"=r"(cycles):[in2]"r"(1<<8|7<<4));
+    asm volatile ("l.nios_rrr %[out1],%[in1],%[in2],0xC":[out1]"=r"(stall):[in1]"r"(1),[in2]"r"(1<<9));
+    asm volatile ("l.nios_rrr %[out1],%[in1],%[in2],0xC":[out1]"=r"(idle):[in1]"r"(2),[in2]"r"(1<<10));
+    printf("Compute nextArray: %d %d %d\n", cycles, stall, idle);
+    asm volatile ("l.nios_rrr r0,r0,%[in2],0xC"::[in2]"r"(7));
+    #endif
+
     // updating array
     for (int i = 0 ; i < HEIGHT ; i++) {
       for (int j = 0 ; j < WIDTH ; j++) {
         array[i][j] = nextArray[i][j];
       }
     }
-    //printf("Done\n");
+
+    //Profling
+    #ifdef PROFILING
+    asm volatile ("l.nios_rrr %[out1],r0,%[in2],0xC":[out1]"=r"(cycles):[in2]"r"(1<<8|7<<4));
+    asm volatile ("l.nios_rrr %[out1],%[in1],%[in2],0xC":[out1]"=r"(stall):[in1]"r"(1),[in2]"r"(1<<9));
+    asm volatile ("l.nios_rrr %[out1],%[in1],%[in2],0xC":[out1]"=r"(idle):[in1]"r"(2),[in2]"r"(1<<10));
+    printf("Update array: %d %d %d\n", cycles, stall, idle);
+    asm volatile ("l.nios_rrr r0,r0,%[in2],0xC"::[in2]"r"(7));
+    #endif
+
   } 
 
   return 0;

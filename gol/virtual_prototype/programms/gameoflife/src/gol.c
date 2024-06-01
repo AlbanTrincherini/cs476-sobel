@@ -7,9 +7,11 @@ volatile uint32_t memBuffer[512];
 
 enum { WIDTH = 40, HEIGHT = 30};
 enum { SEED_W = 40, SEED_H = 30};
-#define SIZE 1200
+#define SIZE (WIDTH * HEIGHT)
 
-int const CELLSIDE = 16;
+#define PROFILING
+
+uint32_t const CELLSIDE = 16;
 static uint8_t seed[SEED_H][SEED_W] = 
                              {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
                               {1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
@@ -45,15 +47,9 @@ static uint8_t seed[SEED_H][SEED_W] =
 
 
 int fateOfTheCell(int cell, int liveNeighbors) {
-  if (cell == 1) {
-    if (liveNeighbors == 2 || liveNeighbors == 3) {
-      return 1;
-    } else {return 0;}
-  } else {
-    if (liveNeighbors == 3) {
-      return 1;
-    } else {return 0;}
-  }
+  return cell == 1 
+    ? liveNeighbors == 2 || liveNeighbors == 3 //cell alive
+    : liveNeighbors == 3; //Cell dead
 }
 
 void polling() {
@@ -152,44 +148,23 @@ int main() {
     for (int j = 0 ; j < WIDTH ; j++) {
       write(toAddr(i, j), seed[i][j]);
       write(SIZE + toAddr(i, j), 0);
-      //array[i][j] = seed[i][j];
-      //nextArray[i][j] = 0;
     }
-     //printf("\n");
   }
 
   // Init profiling counters
   asm volatile ("l.nios_rrr r0,r0,%[in2],0xC"::[in2]"r"(7));
 
+  //Used to debug rng without any polling on buttons
   int testRng = 0;
 
   // GAME
   while(1) {
-    
-    // writing current array to frame buffer (doing it here because of init)
-    /*for (int line = 0; line < camParams.nrOfLinesPerImage; line++) { // x
-      int arrayLine = line/CELLSIDE; // integer division
-      for (int pixel = 0; pixel < camParams.nrOfPixelsPerLine; pixel++) { // y          
-        int arrayCol = pixel/CELLSIDE;
-        uint16_t value = 0xee6b * array[arrayLine][arrayCol];
-        frameBuffer[line*camParams.nrOfPixelsPerLine+pixel] = value; // test
-      }
-    }*/
-
-    // //Profling
-    // asm volatile ("l.nios_rrr %[out1],r0,%[in2],0xC":[out1]"=r"(cycles):[in2]"r"(1<<8|7<<4));
-    // asm volatile ("l.nios_rrr %[out1],%[in1],%[in2],0xC":[out1]"=r"(stall):[in1]"r"(1),[in2]"r"(1<<9));
-    // asm volatile ("l.nios_rrr %[out1],%[in1],%[in2],0xC":[out1]"=r"(idle):[in1]"r"(2),[in2]"r"(1<<10));
-    // printf("write current array: %d %d %d\n", cycles, stall, idle);
-    // asm volatile ("l.nios_rrr r0,r0,%[in2],0xC"::[in2]"r"(7));
-
     set_mem_start(current_buffer);
     start_write();
 
+    // computing nextArray from array
     uint32_t source = current_buffer;
     uint32_t dest = current_buffer == 0 ? SIZE : 0;
-
-    // computing nextArray from array
     for (int x = 0 ; x < HEIGHT ; x++) {
       for (int y = 0 ; y < WIDTH ; y++) {
         int theCell = read(source + toAddr(x, y));
@@ -209,44 +184,34 @@ int main() {
         write(dest + toAddr(x, y), fate);
       }
     }
+
     //Profling
+    #ifdef PROFILING
     asm volatile ("l.nios_rrr %[out1],r0,%[in2],0xC":[out1]"=r"(cycles):[in2]"r"(1<<8|7<<4));
     asm volatile ("l.nios_rrr %[out1],%[in1],%[in2],0xC":[out1]"=r"(stall):[in1]"r"(1),[in2]"r"(1<<9));
     asm volatile ("l.nios_rrr %[out1],%[in1],%[in2],0xC":[out1]"=r"(idle):[in1]"r"(2),[in2]"r"(1<<10));
-    //printf("compute next array: %d %d %d\n", cycles, stall, idle);
+    printf("Compute nextArray: %d %d %d\n", cycles, stall, idle);
     asm volatile ("l.nios_rrr r0,r0,%[in2],0xC"::[in2]"r"(7));
+    #endif
 
     polling();
 
     //Profling
+    #ifdef PROFILING
     asm volatile ("l.nios_rrr %[out1],r0,%[in2],0xC":[out1]"=r"(cycles):[in2]"r"(1<<8|7<<4));
     asm volatile ("l.nios_rrr %[out1],%[in1],%[in2],0xC":[out1]"=r"(stall):[in1]"r"(1),[in2]"r"(1<<9));
     asm volatile ("l.nios_rrr %[out1],%[in1],%[in2],0xC":[out1]"=r"(idle):[in1]"r"(2),[in2]"r"(1<<10));
-    // printf("polling: %d %d %d\n", cycles, stall, idle);
+    printf("Polling: %d %d %d\n", cycles, stall, idle);
     asm volatile ("l.nios_rrr r0,r0,%[in2],0xC"::[in2]"r"(7));
+    #endif
 
-    // // updating array
-    // for (int i = 0 ; i < HEIGHT ; i++) {
-    //   for (int j = 0 ; j < WIDTH ; j++) {
-    //     array[i][j] = nextArray[i][j];
-    //   }
-    // }
-
-    // //Profling
-    // asm volatile ("l.nios_rrr %[out1],r0,%[in2],0xC":[out1]"=r"(cycles):[in2]"r"(1<<8|7<<4));
-    // asm volatile ("l.nios_rrr %[out1],%[in1],%[in2],0xC":[out1]"=r"(stall):[in1]"r"(1),[in2]"r"(1<<9));
-    // asm volatile ("l.nios_rrr %[out1],%[in1],%[in2],0xC":[out1]"=r"(idle):[in1]"r"(2),[in2]"r"(1<<10));
-    // printf("update array from next array: %d %d %d\n", cycles, stall, idle);
-    // asm volatile ("l.nios_rrr r0,r0,%[in2],0xC"::[in2]"r"(7));
-
-    // printf("Done\n");
-
+    //Fresh data is now in the other buffer
     current_buffer = current_buffer == 0 ? SIZE : 0;
 
     if (testRng || getEdgecapture()) {
       for (int i = 0 ; i < HEIGHT ; i++) {
         for (int j = 0 ; j < WIDTH ; j++) {
-          write(current_buffer + toAddr(i, j), getRng() & 1);
+          write(current_buffer + toAddr(i, j), getRng() & 0b1);
         }
       }
       testRng = 0;
