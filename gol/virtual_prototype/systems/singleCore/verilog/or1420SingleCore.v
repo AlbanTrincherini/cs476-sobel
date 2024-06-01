@@ -316,7 +316,7 @@ module or1420SingleCore ( input wire         clock12MHz,
    * Here we instantiate the CPU
    *
    */
-  wire [31:0] s_cpu1CiResult, s_profileResult, s_grayResult, s_ramDmaResult, s_rngResult;
+  wire [31:0] s_cpu1CiResult, s_profileResult, s_grayResult, s_ramDmaResult, s_rngResult, s_edgecaptureResult;
   wire [31:0] s_cpu1CiDataA, s_cpu1CiDataB, s_camCiResult, s_delayResult;
   wire [7:0]  s_cpu1CiN;
   wire        s_cpu1CiRa, s_cpu1CiRb, s_cpu1CiRc, s_cpu1CiStart, s_cpu1CiCke, s_cpu1CiDone, s_i2cCiDone, s_delayCiDone;
@@ -328,11 +328,12 @@ module or1420SingleCore ( input wire         clock12MHz,
   wire [3:0]  s_cpu1byteEnables;
   wire        s_cpu1DataValid;
   wire [7:0]  s_cpu1BurstSize;
-  wire        s_spm1Irq, s_profileDone, s_stall, s_grayDone, s_rngDone;
+  wire        s_spm1Irq, s_profileDone, s_stall, s_grayDone, s_rngDone, s_edgecaptureDone;
   
-  assign s_cpu1CiDone = s_hdmiDone | s_swapByteDone | s_flashDone | s_cpuFreqDone | s_i2cCiDone | s_delayCiDone | s_camCiDone | s_profileDone | s_grayDone | s_ramDmaDone | s_rngDone;
+  assign s_cpu1CiDone = s_hdmiDone | s_swapByteDone | s_flashDone | s_cpuFreqDone | s_i2cCiDone | s_delayCiDone | s_camCiDone | s_profileDone | s_grayDone | s_ramDmaDone | s_rngDone |
+                          s_edgecaptureDone;
   assign s_cpu1CiResult = s_hdmiResult | s_swapByteResult | s_flashResult | s_cpuFreqResult | s_i2cCiResult | s_camCiResult | s_delayResult | s_profileResult | s_grayResult |
-                          s_ramDmaResult | s_rngResult; 
+                          s_ramDmaResult | s_rngResult | s_edgecaptureResult; 
 
   or1420Top #( .NOP_INSTRUCTION(32'h1500FFFF)) cpu1
              (.cpuClock(s_systemClock),
@@ -458,7 +459,7 @@ module or1420SingleCore ( input wire         clock12MHz,
 
   /*
    *
-   * An rgb to grayscale ISE
+   * A pseudorandom generator
    *
    */
   pseudoRngCi #(.customInstructionId(8'd250)) randomgenerator
@@ -468,6 +469,21 @@ module or1420SingleCore ( input wire         clock12MHz,
                        .cIn(s_cpu1CiN),
                        .done(s_rngDone),
                        .result(s_rngResult) );
+
+  /*
+   *
+   * A button edgecapture handler
+   *
+   */
+  edgecaptureCi #(.customInstructionId(8'd251)) edgecapture
+                      (.reset(s_cpuReset),
+                       .start(s_cpu1CiStart),
+                       .clock(s_systemClock),
+                       .cIn(s_cpu1CiN),
+                       .buttons(in_buttons),
+                       .valueA(s_cpu1CiDataA),
+                       .done(s_edgecaptureDone),
+                       .result(s_edgecaptureResult) );
 
   /*
    *
