@@ -19,7 +19,7 @@ always @(posedge clock)
         else if(valueA[0] == 1'b1) //Clear the edgecapture
             edgecapture <= 5'b0;
         else
-            edgecapture <= edgecapture | buttons;
+            edgecapture <= edgecapture | ~buttons;
     end
 
 assign done   = s_isMyCi;

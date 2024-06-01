@@ -19,7 +19,7 @@
 #
 # Quartus Prime
 # Version 18.1.1 Build 646 04/11/2019 SJ Lite Edition
-# Date created = 15:51:34  May 28, 2024
+# Date created = 13:56:37  June 01, 2024
 #
 # -------------------------------------------------------------------------- #
 #
@@ -40,7 +40,7 @@
 set_global_assignment -name FAMILY "Cyclone IV E"
 set_global_assignment -name DEVICE EP4CE30F23C8
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 18.1.1
-set_global_assignment -name PROJECT_CREATION_TIME_DATE "15:51:34  MAY 28, 2024"
+set_global_assignment -name PROJECT_CREATION_TIME_DATE "13:56:37  JUNE 01, 2024"
 set_global_assignment -name LAST_QUARTUS_VERSION "18.1.1 Lite Edition"
 set_global_assignment -name TOP_LEVEL_ENTITY or1420SingleCore
 
@@ -87,6 +87,8 @@ set_global_assignment -name VERILOG_FILE ../../../modules/pseudoRngCi/verilog/ps
 set_global_assignment -name VERILOG_FILE ../../../modules/grayscaleCi/verilog/rgb565Grayscale.v
 
 set_global_assignment -name VERILOG_FILE ../../../modules/grayscaleCi/verilog/rgb565ISE.v
+
+set_global_assignment -name VERILOG_FILE ../../../modules/edgecaptureCi/verilog/edgecapture.v
 
 set_global_assignment -name VERILOG_FILE ../../../modules/gpio/verilog/gpio.v
 
@@ -205,6 +207,11 @@ set_location_assignment PIN_AA17 -to hdmiRed[1]
 set_location_assignment PIN_T12 -to hdmiRed[2]
 set_location_assignment PIN_U12 -to hdmiRed[3]
 set_location_assignment PIN_P15 -to horizontalSync
+set_location_assignment PIN_B11 -to in_buttons[0]
+set_location_assignment PIN_A11 -to in_buttons[1]
+set_location_assignment PIN_B12 -to in_buttons[2]
+set_location_assignment PIN_A12 -to in_buttons[3]
+set_location_assignment PIN_G22 -to in_buttons[4]
 set_location_assignment PIN_AA11 -to nReset
 set_location_assignment PIN_V15 -to pixelClock
 set_location_assignment PIN_N5 -to sdramAddr[0]

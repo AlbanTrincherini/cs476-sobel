@@ -3,8 +3,6 @@
 #include <ov7670.h>
 #include <vga.h>
 
-volatile uint32_t memBuffer[512];
-
 enum { WIDTH = 40, HEIGHT = 30};
 enum { SEED_W = 40, SEED_H = 30};
 #define SIZE 1200
@@ -56,57 +54,10 @@ int fateOfTheCell(int cell, int liveNeighbors) {
   }
 }
 
-// void polling() {
-//   int res = 1;
-//   while(res == 1) {
-//     asm volatile ("l.nios_rrr %[out1],%[in1],r0,0x14":[out1]"=r"(res):[in1]"r"(0b1010 << 12));
-//   }
-// }
-
-// void set_bus_start(uint32_t* start) {
-//   uint32_t addr = (uint32_t) start;
-//   asm volatile ("l.nios_rrr r0,%[in1],%[in2],0x14"::[in1]"r"(0b0011 << 12),[in2]"r"(addr));
-// }
-
-// void set_mem_start(uint32_t start) {
-//   asm volatile ("l.nios_rrr r0,%[in1],%[in2],0x14"::[in1]"r"(0b0101 << 12),[in2]"r"(start));
-// }
-
-// void start_read() {
-//   asm volatile ("l.nios_rrr r0,%[in1],%[in2],0x14"::[in1]"r"(0b1011 << 12),[in2]"r"(0b1));
-// }
-
-// void start_write() {
-//   asm volatile ("l.nios_rrr r0,%[in1],%[in2],0x14"::[in1]"r"(0b1011 << 12),[in2]"r"(0b10));
-// }
-
-// uint32_t read(uint32_t addr) {
-//   uint32_t result = 0;
-//   asm volatile ("l.nios_rrr %[out1],%[in1],r0,0x14":[out1]"=r"(result):[in1]"r"(addr));
-//   return result;
-// }
-
-// void write(uint32_t addr, uint32_t value) {
-//   addr = (1 << 12) | addr;
-//   asm volatile ("l.nios_rrr r0,%[in1],%[in2],0x14"::[in1]"r"(addr),[in2]"r"(value));
-// }
-
-// uint32_t toAddr(int x, int y) {
-//   int res = x*WIDTH + y;
-//   return res;
-// }
-
-// uint32_t getRng() {
-//   uint32_t res;
-//   asm volatile ("l.nios_rrr %[out1],r0,r0,0xFA":[out1]"=r"(res):);
-//   return res;
-// } 
-
 int main() {
-  uint8_t array[HEIGHT][WIDTH];
-  uint8_t nextArray[HEIGHT][WIDTH];
-  uint16_t frameBuffer[640*480];
-  
+  volatile uint8_t array[HEIGHT][WIDTH];
+  volatile uint8_t nextArray[HEIGHT][WIDTH];
+  volatile uint16_t frameBuffer[640*480];
 
   volatile int result;
   volatile unsigned int *vga = (unsigned int *) 0X50000020;
@@ -146,7 +97,7 @@ int main() {
       for (int pixel = 0; pixel < camParams.nrOfPixelsPerLine; pixel++) { // y          
         int arrayCol = pixel/CELLSIDE;
         uint16_t value = 0xee6b * array[arrayLine][arrayCol];
-        frameBuffer[line*camParams.nrOfPixelsPerLine+pixel] = value; // test
+        frameBuffer[line*camParams.nrOfPixelsPerLine+pixel] = value;
       }
     }
 
@@ -169,7 +120,7 @@ int main() {
         array[i][j] = nextArray[i][j];
       }
     }
-    printf("Done\n");
+    //printf("Done\n");
   } 
 
   return 0;

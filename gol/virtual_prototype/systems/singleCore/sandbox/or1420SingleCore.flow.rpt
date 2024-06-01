@@ -1,5 +1,5 @@
 Flow report for or1420SingleCore
-Tue May 28 15:53:27 2024
+Sat Jun  1 13:58:30 2024
 Quartus Prime Version 18.1.1 Build 646 04/11/2019 SJ Lite Edition
 
 
@@ -41,18 +41,18 @@ https://fpgasoftware.intel.com/eula.
 +----------------------------------------------------------------------------------+
 ; Flow Summary                                                                     ;
 +------------------------------------+---------------------------------------------+
-; Flow Status                        ; Successful - Tue May 28 15:53:18 2024       ;
+; Flow Status                        ; Successful - Sat Jun  1 13:58:22 2024       ;
 ; Quartus Prime Version              ; 18.1.1 Build 646 04/11/2019 SJ Lite Edition ;
 ; Revision Name                      ; or1420SingleCore                            ;
 ; Top-level Entity Name              ; or1420SingleCore                            ;
 ; Family                             ; Cyclone IV E                                ;
 ; Device                             ; EP4CE30F23C8                                ;
 ; Timing Models                      ; Final                                       ;
-; Total logic elements               ; 14,554 / 28,848 ( 50 % )                    ;
-;     Total combinational functions  ; 13,574 / 28,848 ( 47 % )                    ;
-;     Dedicated logic registers      ; 6,457 / 28,848 ( 22 % )                     ;
-; Total registers                    ; 6457                                        ;
-; Total pins                         ; 113 / 329 ( 34 % )                          ;
+; Total logic elements               ; 14,488 / 28,848 ( 50 % )                    ;
+;     Total combinational functions  ; 13,552 / 28,848 ( 47 % )                    ;
+;     Dedicated logic registers      ; 6,462 / 28,848 ( 22 % )                     ;
+; Total registers                    ; 6462                                        ;
+; Total pins                         ; 118 / 329 ( 36 % )                          ;
 ; Total virtual pins                 ; 0                                           ;
 ; Total memory bits                  ; 277,248 / 608,256 ( 46 % )                  ;
 ; Embedded Multiplier 9-bit elements ; 9 / 132 ( 7 % )                             ;
@@ -65,19 +65,19 @@ https://fpgasoftware.intel.com/eula.
 +-------------------+---------------------+
 ; Option            ; Setting             ;
 +-------------------+---------------------+
-; Start date & time ; 05/28/2024 15:51:36 ;
+; Start date & time ; 06/01/2024 13:56:39 ;
 ; Main task         ; Compilation         ;
 ; Revision Name     ; or1420SingleCore    ;
 +-------------------+---------------------+
 
 
-+----------------------------------------------------------------------------------------------------+
-; Flow Non-Default Global Settings                                                                   ;
-+-----------------------+---------------------------------+---------------+-------------+------------+
-; Assignment Name       ; Value                           ; Default Value ; Entity Name ; Section Id ;
-+-----------------------+---------------------------------+---------------+-------------+------------+
-; COMPILER_SIGNATURE_ID ; 185263057046963.171690429629872 ; --            ; --          ; --         ;
-+-----------------------+---------------------------------+---------------+-------------+------------+
++---------------------------------------------------------------------------------------------------+
+; Flow Non-Default Global Settings                                                                  ;
++-----------------------+--------------------------------+---------------+-------------+------------+
+; Assignment Name       ; Value                          ; Default Value ; Entity Name ; Section Id ;
++-----------------------+--------------------------------+---------------+-------------+------------+
+; COMPILER_SIGNATURE_ID ; 66351912854497.171724299919670 ; --            ; --          ; --         ;
++-----------------------+--------------------------------+---------------+-------------+------------+
 
 
 +--------------------------------------------------------------------------------------------------------------------------+
@@ -85,11 +85,11 @@ https://fpgasoftware.intel.com/eula.
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 ; Module Name          ; Elapsed Time ; Average Processors Used ; Peak Virtual Memory ; Total CPU Time (on all processors) ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
-; Analysis & Synthesis ; 00:00:32     ; 1.0                     ; 1125 MB             ; 00:00:40                           ;
-; Fitter               ; 00:01:04     ; 1.2                     ; 2164 MB             ; 00:02:13                           ;
+; Analysis & Synthesis ; 00:00:31     ; 1.0                     ; 1135 MB             ; 00:00:40                           ;
+; Fitter               ; 00:01:04     ; 1.2                     ; 2161 MB             ; 00:02:13                           ;
 ; Assembler            ; 00:00:02     ; 1.0                     ; 850 MB              ; 00:00:02                           ;
-; Timing Analyzer      ; 00:00:07     ; 1.5                     ; 1079 MB             ; 00:00:08                           ;
-; Total                ; 00:01:45     ; --                      ; --                  ; 00:03:03                           ;
+; Timing Analyzer      ; 00:00:07     ; 1.5                     ; 1095 MB             ; 00:00:08                           ;
+; Total                ; 00:01:44     ; --                      ; --                  ; 00:03:03                           ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 
 
@@ -98,10 +98,10 @@ https://fpgasoftware.intel.com/eula.
 +----------------------+------------------+----------------+------------+----------------+
 ; Module Name          ; Machine Hostname ; OS Name        ; OS Version ; Processor type ;
 +----------------------+------------------+----------------+------------+----------------+
-; Analysis & Synthesis ; icin3pc05        ; Ubuntu 22.04.3 ; 22         ; x86_64         ;
-; Fitter               ; icin3pc05        ; Ubuntu 22.04.3 ; 22         ; x86_64         ;
-; Assembler            ; icin3pc05        ; Ubuntu 22.04.3 ; 22         ; x86_64         ;
-; Timing Analyzer      ; icin3pc05        ; Ubuntu 22.04.3 ; 22         ; x86_64         ;
+; Analysis & Synthesis ; icin3pc45        ; Ubuntu 22.04.3 ; 22         ; x86_64         ;
+; Fitter               ; icin3pc45        ; Ubuntu 22.04.3 ; 22         ; x86_64         ;
+; Assembler            ; icin3pc45        ; Ubuntu 22.04.3 ; 22         ; x86_64         ;
+; Timing Analyzer      ; icin3pc45        ; Ubuntu 22.04.3 ; 22         ; x86_64         ;
 +----------------------+------------------+----------------+------------+----------------+
 
 

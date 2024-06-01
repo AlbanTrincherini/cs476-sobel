@@ -20,7 +20,7 @@
 ../../../modules/pseudoRngCi/verilog/pseudoRngCi.v
 ../../../modules/grayscaleCi/verilog/rgb565Grayscale.v
 ../../../modules/grayscaleCi/verilog/rgb565ISE.v
-../../../modules/edgecaptureCi/verilog/edgecaptureCi.v
+../../../modules/edgecaptureCi/verilog/edgecapture.v
 ../../../modules/gpio/verilog/gpio.v
 ../../../modules/golCi/verilog/dualPortSSram.v
 ../../../modules/golCi/verilog/golDmaCi.v

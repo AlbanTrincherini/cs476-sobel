@@ -102,8 +102,18 @@ uint32_t getRng() {
   return res;
 } 
 
+uint32_t getEdgecapture() {
+  uint32_t res;
+  asm volatile ("l.nios_rrr %[out1],r0,r0,0xFB":[out1]"=r"(res):);
+  return res;
+} 
+
+void clearEdgecapture() {
+  asm volatile ("l.nios_rrr r0,%[in1],r0,0xFB"::[in1]"r"(0b1):);
+} 
+
 int main() {
-  uint16_t frameBuffer[640*480];
+  volatile uint16_t frameBuffer[640*480];
   volatile uint32_t current_buffer = 0;
 
 
@@ -151,7 +161,7 @@ int main() {
   // Init profiling counters
   asm volatile ("l.nios_rrr r0,r0,%[in2],0xC"::[in2]"r"(7));
 
-  int test = 1;
+  int testRng = 0;
 
   // GAME
   while(1) {
@@ -203,7 +213,7 @@ int main() {
     asm volatile ("l.nios_rrr %[out1],r0,%[in2],0xC":[out1]"=r"(cycles):[in2]"r"(1<<8|7<<4));
     asm volatile ("l.nios_rrr %[out1],%[in1],%[in2],0xC":[out1]"=r"(stall):[in1]"r"(1),[in2]"r"(1<<9));
     asm volatile ("l.nios_rrr %[out1],%[in1],%[in2],0xC":[out1]"=r"(idle):[in1]"r"(2),[in2]"r"(1<<10));
-    printf("compute next array: %d %d %d\n", cycles, stall, idle);
+    //printf("compute next array: %d %d %d\n", cycles, stall, idle);
     asm volatile ("l.nios_rrr r0,r0,%[in2],0xC"::[in2]"r"(7));
 
     polling();
@@ -212,7 +222,7 @@ int main() {
     asm volatile ("l.nios_rrr %[out1],r0,%[in2],0xC":[out1]"=r"(cycles):[in2]"r"(1<<8|7<<4));
     asm volatile ("l.nios_rrr %[out1],%[in1],%[in2],0xC":[out1]"=r"(stall):[in1]"r"(1),[in2]"r"(1<<9));
     asm volatile ("l.nios_rrr %[out1],%[in1],%[in2],0xC":[out1]"=r"(idle):[in1]"r"(2),[in2]"r"(1<<10));
-    printf("polling: %d %d %d\n", cycles, stall, idle);
+    // printf("polling: %d %d %d\n", cycles, stall, idle);
     asm volatile ("l.nios_rrr r0,r0,%[in2],0xC"::[in2]"r"(7));
 
     // // updating array
@@ -233,13 +243,14 @@ int main() {
 
     current_buffer = current_buffer == 0 ? SIZE : 0;
 
-    if (test) {
+    if (testRng || getEdgecapture()) {
       for (int i = 0 ; i < HEIGHT ; i++) {
         for (int j = 0 ; j < WIDTH ; j++) {
           write(current_buffer + toAddr(i, j), getRng() & 1);
         }
       }
-      test = 0;
+      testRng = 0;
+      clearEdgecapture();
     }
   } 
 
