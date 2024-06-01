@@ -30,6 +30,7 @@ module or1420SingleCore ( input wire         clock12MHz,
 
                           input wire [7:0]   dipSwitch,
                           output wire [23:0] sevenSegments,
+                          input wire [4:0] in_buttons, // ADDED BY US
 `ifdef GECKO5Education
                           output wire [4:0]  hdmiRed,
                                              hdmiBlue,

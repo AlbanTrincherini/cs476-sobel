@@ -1,6 +1,13 @@
 set_location_assignment PIN_T22 -to clock12MHz
 set_location_assignment PIN_T1 -to clock50MHz
 
+# ADDED BY US
+set_location_assignment PIN_B11 -to in_buttons[0]
+set_location_assignment PIN_A11 -to in_buttons[1]
+set_location_assignment PIN_B12 -to in_buttons[2]
+set_location_assignment PIN_A12 -to in_buttons[3]
+set_location_assignment PIN_G22 -to in_buttons[4]
+
 set_location_assignment PIN_U12 -to hdmiRed[3]
 set_location_assignment PIN_T12 -to hdmiRed[2]
 set_location_assignment PIN_AA17 -to hdmiRed[1]
