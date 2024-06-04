@@ -16,7 +16,7 @@ always @(posedge clock)
     begin
         if(reset == 1'b1) 
             edgecapture <= 5'b0;
-        else if(valueA[0] == 1'b1) //Clear the edgecapture
+        else if(valueA[0] == 1'b1 && s_isMyCi == 1'b1) //Clear the edgecapture
             edgecapture <= 5'b0;
         else
             edgecapture <= edgecapture | ~buttons;
